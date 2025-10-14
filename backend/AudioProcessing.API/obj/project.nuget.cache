@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "rMTTE03hSxc=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.API\\AudioProcessing.API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\nikiv\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.8\\microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "C:\\Users\\nikiv\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj": {}
+    "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj": {
+    "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj",
+        "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj",
         "projectName": "AudioProcessing.Application",
-        "projectPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj",
+        "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj",
         "packagesPath": "C:\\Users\\nikiv\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Application\\obj\\",
+        "outputPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,8 +33,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj": {
-                "projectPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj"
+              "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj": {
+                "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj"
               }
             }
           }
@@ -74,14 +74,14 @@
         }
       }
     },
-    "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj": {
+    "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj",
-        "projectName": "AudioProcessing.Core",
-        "projectPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj",
+        "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj",
+        "projectName": "AudioProcessing.Domain",
+        "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj",
         "packagesPath": "C:\\Users\\nikiv\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\obj\\",
+        "outputPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -140,14 +140,14 @@
         }
       }
     },
-    "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj": {
+    "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj",
         "projectName": "AudioProcessing.Infrastructure",
-        "projectPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj",
+        "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\nikiv\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -169,11 +169,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj": {
-                "projectPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj"
+              "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj": {
+                "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj"
               },
-              "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj": {
-                "projectPath": "C:\\Users\\nikiv\\Desktop\\audioProcessing\\backend\\AudioProcessing.Core\\AudioProcessing.Core.csproj"
+              "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj": {
+                "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj"
               }
             }
           }
@@ -194,11 +194,23 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "Confluent.Kafka": {
+              "target": "Package",
+              "version": "[2.12.0, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.10, )"
+            },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.9, )"
+            },
+            "Minio": {
+              "target": "Package",
+              "version": "[7.0.0, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",

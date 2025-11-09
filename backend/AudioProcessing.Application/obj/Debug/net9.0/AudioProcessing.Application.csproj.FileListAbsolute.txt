@@ -1,0 +1,16 @@
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\bin\Debug\net9.0\AudioProcessing.Application.deps.json
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\bin\Debug\net9.0\AudioProcessing.Application.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\bin\Debug\net9.0\AudioProcessing.Application.pdb
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.csproj.AssemblyReference.cache
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.AssemblyInfoInputs.cache
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.AssemblyInfo.cs
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.csproj.CoreCompileInputs.cache
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.sourcelink.json
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioPro.88D21696.Up2Date
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\refint\AudioProcessing.Application.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\AudioProcessing.Application.pdb
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\obj\Debug\net9.0\ref\AudioProcessing.Application.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\bin\Debug\net9.0\AudioProcessing.Domain.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.Application\bin\Debug\net9.0\AudioProcessing.Domain.pdb

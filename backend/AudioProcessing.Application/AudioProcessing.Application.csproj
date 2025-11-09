@@ -1,7 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\AudioProcessing.Core\AudioProcessing.Core.csproj" />
+    <ProjectReference Include="..\AudioProcessing.Domain\AudioProcessing.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Audio\Commands\" />
+    <Folder Include="Audio\Handlers\" />
+    <Folder Include="Audio\Responses\" />
   </ItemGroup>
 
   <PropertyGroup>

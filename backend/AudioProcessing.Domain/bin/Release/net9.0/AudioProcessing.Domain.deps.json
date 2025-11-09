@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "AudioProcessing.Domain/1.0.0": {
+        "runtime": {
+          "AudioProcessing.Domain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AudioProcessing.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

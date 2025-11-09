@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AudioProcessing.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4c0825d96a7c3e75f66b5446fafe7a3f82262288")]
 [assembly: System.Reflection.AssemblyProductAttribute("AudioProcessing.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AudioProcessing.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

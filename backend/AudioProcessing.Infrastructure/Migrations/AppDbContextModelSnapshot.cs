@@ -64,6 +64,35 @@ namespace AudioProcessing.Infrastructure.Migrations
                     b.ToTable("Jobs");
                 });
 
+            modelBuilder.Entity("AudioProcessing.Domain.Entities.Project.ProjectEntity", b =>
+                {
+                    b.Property<Guid>("ProjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("ProjectId");
+
+                    b.ToTable("Projects");
+                });
+
             modelBuilder.Entity("AudioProcessing.Domain.Entities.Track.TrackEntity", b =>
                 {
                     b.Property<Guid>("TrackId")
@@ -88,6 +117,37 @@ namespace AudioProcessing.Infrastructure.Migrations
                     b.HasKey("TrackId");
 
                     b.ToTable("Tracks");
+                });
+
+            modelBuilder.Entity("AudioProcessing.Domain.Entities.User.UserEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("role");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }

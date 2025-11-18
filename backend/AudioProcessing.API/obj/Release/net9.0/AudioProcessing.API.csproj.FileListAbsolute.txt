@@ -165,3 +165,6 @@ C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Re
 C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Release\net9.0\runtimes\win-x86\native\zstd.dll
 C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Release\net9.0\AudioProcessing.Domain.dll
 C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Release\net9.0\AudioProcessing.Domain.pdb
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Release\net9.0\Scalar.AspNetCore.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Release\net9.0\Swashbuckle.AspNetCore.ReDoc.dll
+C:\Users\nikiv\Desktop\MyProj\audioProcessing\backend\AudioProcessing.API\bin\Release\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll

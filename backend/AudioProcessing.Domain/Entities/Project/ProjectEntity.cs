@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AudioProcessing.Domain.Entities.Project;
 
+[Table("Projects")]
 public class ProjectEntity
 {
     [Key]

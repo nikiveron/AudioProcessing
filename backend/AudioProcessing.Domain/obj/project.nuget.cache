@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "7MxYm6wlUlc=",
+  "dgSpecHash": "CBwIAGtoujM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj",
+  "projectFilePath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Domain\\AudioProcessing.Domain.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

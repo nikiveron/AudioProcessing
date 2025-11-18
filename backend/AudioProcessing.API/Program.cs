@@ -27,7 +27,8 @@ builder.Services.AddControllers();
 
 // DbContext: если connection string пуст Ч UseNpgsql всЄ равно вызовет ошибку при миграции/подключении
 builder.Services.AddDbContext<AppDbContext>(opts =>
-    opts.UseNpgsql(pgConn ?? throw new InvalidOperationException("ConnectionStrings:Postgres is missing")));
+    opts.UseNpgsql(pgConn ?? throw new InvalidOperationException("ConnectionStrings:Postgres is missing"),
+        b => b.MigrationsAssembly("AudioProcessing.Infrastructure")));
 
 // Kafka producer Ч читаем key "Kafka:BootstrapServers"
 var kafkaBootstrap = configuration["Kafka:BootstrapServers"];
@@ -125,3 +126,4 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+

@@ -2181,19 +2181,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\nikiv\\.nuget\\packages\\": {}
+    "C:\\Users\\nikiv\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\workers\\AudioProcessing.Worker\\AudioProcessing.Worker.csproj",
+      "projectUniqueName": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\workers\\AudioProcessing.Worker\\AudioProcessing.Worker.csproj",
       "projectName": "AudioProcessing.Worker",
-      "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\workers\\AudioProcessing.Worker\\AudioProcessing.Worker.csproj",
+      "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\workers\\AudioProcessing.Worker\\AudioProcessing.Worker.csproj",
       "packagesPath": "C:\\Users\\nikiv\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\workers\\AudioProcessing.Worker\\obj\\",
+      "outputPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\workers\\AudioProcessing.Worker\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
         "C:\\Users\\nikiv\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -2201,17 +2206,18 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj": {
-              "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj"
+            "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj": {
+              "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Application\\AudioProcessing.Application.csproj"
             },
-            "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj"
+            "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\backend\\AudioProcessing.Infrastructure\\AudioProcessing.Infrastructure.csproj"
             }
           }
         }
@@ -2257,7 +2263,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

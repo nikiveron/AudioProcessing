@@ -1,6 +1,8 @@
 ﻿using AudioProcessing.Infrastructure.Context;
 using AudioProcessing.Infrastructure.Storage;
 using AudioProcessing.Domain.Entities.Process;
+using AudioProcessing.Domain.Entities.Track;
+using AudioProcessing.Domain.Entities.Job;
 using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -18,10 +20,10 @@ public class ProcessController(IProducer<Null, string> producer, AppDbContext db
     [HttpPost]
     public async Task<IActionResult> StartProcess([FromBody] ProcessRequestEntity req)
     {
-        Track track = await _db.Tracks.FindAsync(req.TrackId);
+        TrackEntity track = await _db.Tracks.FindAsync(req.TrackId);
         if (track == null) return NotFound();
 
-        var job = new Job { JobId = Guid.NewGuid(), TrackId = track.TrackId, Status = JobStatus.Queued, InputKey = track.StorageKey, CreatedAt = DateTime.UtcNow };
+        var job = new JobEntity { JobId = Guid.NewGuid(), TrackId = track.TrackId, Status = JobStatus.Queued, InputKey = track.StorageKey, CreatedAt = DateTime.UtcNow };
         _db.Jobs.Add(job);
         await _db.SaveChangesAsync();
 

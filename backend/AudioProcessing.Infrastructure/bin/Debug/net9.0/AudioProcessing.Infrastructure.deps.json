@@ -777,7 +777,14 @@
         }
       },
       "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
-      "System.Text.Json/9.0.9": {},
+      "System.Text.Json/9.0.9": {
+        "runtime": {
+          "lib/net9.0/System.Text.Json.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.925.41916"
+          }
+        }
+      },
       "System.Threading.Channels/7.0.0": {},
       "AudioProcessing.Application/1.0.0": {
         "dependencies": {

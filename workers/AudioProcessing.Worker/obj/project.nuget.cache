@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "hPMf+G0eDks=",
+  "dgSpecHash": "IZqcd2+STzQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\nikiv\\Desktop\\MyProjects\\AudioProcessing\\workers\\AudioProcessing.Worker\\AudioProcessing.Worker.csproj",
+  "projectFilePath": "C:\\Users\\nikiv\\Desktop\\MyProj\\audioProcessing\\workers\\AudioProcessing.Worker\\AudioProcessing.Worker.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\nikiv\\.nuget\\packages\\communitytoolkit.highperformance\\8.4.0\\communitytoolkit.highperformance.8.4.0.nupkg.sha512",
     "C:\\Users\\nikiv\\.nuget\\packages\\confluent.kafka\\2.12.0\\confluent.kafka.2.12.0.nupkg.sha512",

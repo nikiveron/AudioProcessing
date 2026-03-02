@@ -15,6 +15,7 @@ public class ProcessController(IProducer<Null, string> producer, AppDbContext db
 {
     private readonly IProducer<Null, string> _producer = producer;
     private readonly AppDbContext _db = db;
+    private readonly string _outputTopic = "job.created";
 
     /// <summary>
     /// Принимает параметры (fileKey, genre, instrument), создаёт запись Job в БД и публикует сообщение в Kafka
@@ -39,7 +40,7 @@ public class ProcessController(IProducer<Null, string> producer, AppDbContext db
             parameters = new { req.Genre, req.Instrument }
         });
 
-        await _producer.ProduceAsync("audio-jobs", new Message<Null, string> { Value = message });
+        await _producer.ProduceAsync(_outputTopic, new Message<Null, string> { Value = message });
         _producer.Flush(TimeSpan.FromSeconds(5));
 
         return Ok(new { jobId = job.JobId });

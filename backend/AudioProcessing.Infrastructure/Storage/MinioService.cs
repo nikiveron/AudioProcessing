@@ -44,11 +44,11 @@ public class MinioService
             .WithContentType(contentType));
     }
 
-    public async Task<Stream> GetObjectStreamAsync(string objectName)
+    public async Task<Stream> GetObjectStreamAsync(string objectName, CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await _client.GetObjectAsync(new GetObjectArgs().WithBucket(_bucket).WithObject(objectName)
-            .WithCallbackStream((stream) => stream.CopyTo(ms)));
+            .WithCallbackStream((stream) => stream.CopyTo(ms)), cancellationToken);
         ms.Position = 0;
         return ms;
     }

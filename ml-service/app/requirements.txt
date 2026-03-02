@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-torch
-numpy
-librosa
-soundfile
-matplotlib
-kafka-python
-python-dotenv

@@ -29,8 +29,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - kafka
-      - backend
+      kafka:
+        condition: service_healthy
+      kafka-setup:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
     networks:
       - audio_net
 
@@ -103,6 +107,12 @@ services:
     restart: always
     depends_on:
       - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -115,6 +125,33 @@ services:
     networks:
       - audio_net
 
+  kafka-setup:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: audio_kafka_setup
+    restart: "no"
+    networks:
+      - audio_net
+    depends_on:
+      kafka:
+        condition: service_healthy 
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "
+      echo 'Ожидание готовности Kafka...'
+      sleep 10
+      echo 'Создание топиков...'
+      
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic job.created --partitions 1 --replication-factor 1
+      
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic job.prepared --partitions 1 --replication-factor 1
+      
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic job.completed --partitions 1 --replication-factor 1
+      
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic job.failed --partitions 1 --replication-factor 1
+      
+      echo 'Топики созданы:'
+      kafka-topics --list --bootstrap-server kafka:9092
+      "
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest

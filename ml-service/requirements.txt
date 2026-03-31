@@ -6,3 +6,6 @@ soundfile
 numpy
 matplotlib
 python-multipart
+confluent-kafka
+minio
+requests

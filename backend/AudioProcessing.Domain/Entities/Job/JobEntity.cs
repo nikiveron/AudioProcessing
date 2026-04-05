@@ -34,6 +34,7 @@ public class JobEntity
 
 public enum JobStatus
 {
+    Null = -1,
     Queued,
     Running,
     Success,

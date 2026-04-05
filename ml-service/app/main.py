@@ -1,146 +1,145 @@
-import threading
-from contextlib import asynccontextmanager
+from fastapi import FastAPI
+import torch
+import json
+import io
+import requests
+from confluent_kafka import Consumer, Producer
+from minio import Minio
+from model import GRUSeparator
+from utils import process_single_file
 
 from confluent_kafka import Consumer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import KAFKA_BOOTSTRAP
-from .kafka_service import kafka_consumer_loop
-from .minio_service import get_minio_client
+# ---------- CONFIG ----------
 
-consumer_thread = None
-shutdown_event = threading.Event()
+KAFKA_BOOTSTRAP = "kafka:9092"
+INPUT_TOPIC = "job.prepared"
+OUTPUT_TOPIC_OK = "job.completed"
+OUTPUT_TOPIC_FAIL = "job.failed"
 
+MINIO_ENDPOINT = "minio:9000"
+MINIO_ACCESS_KEY = "minio"
+MINIO_SECRET_KEY = "minio123"
+BUCKET = "audio-files"
 
-def check_kafka_health() -> tuple[bool, str]:
-    """Check Kafka connectivity"""
-    try:
-        consumer = Consumer({
-            "bootstrap.servers": KAFKA_BOOTSTRAP,
-            "group.id": "health-check",
-            "session.timeout.ms": 3000,
-        })
-        consumer.list_topics(timeout=5)
-        consumer.close()
-        return True, "OK"
-    except Exception as e:
-        return False, str(e)
+BACKEND_URL = "http://backend:8080/api/jobs"
 
+# ---------- MODEL ----------
 
-def check_minio_health() -> tuple[bool, str]:
-    """Check MinIO connectivity"""
-    try:
-        client = get_minio_client()
-        client.list_buckets()
-        return True, "OK"
-    except Exception as e:
-        return False, str(e)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = GRUSeparator().to(device)
+model.load_state_dict(torch.load("model_weights.pth", map_location=device))
+model.eval()
 
+# ---------- MINIO ----------
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Manage application lifecycle"""
-    global consumer_thread
-    print("[App] Starting ML Audio Processor")
-
-    # Start Kafka consumer in background thread
-    consumer_thread = threading.Thread(target=kafka_consumer_loop, daemon=True)
-    consumer_thread.start()
-    print("[App] Kafka consumer started")
-
-    yield
-
-    print("[App] Shutting down")
-    shutdown_event.set()
-    if consumer_thread and consumer_thread.is_alive():
-        consumer_thread.join(timeout=5)
-
-
-app = FastAPI(
-    title="ML Audio Processor",
-    description="Asynchronous audio processing service with Kafka integration",
-    version="1.0.0",
-    lifespan=lifespan
+minio_client = Minio(
+    MINIO_ENDPOINT,
+    access_key=MINIO_ACCESS_KEY,
+    secret_key=MINIO_SECRET_KEY,
+    secure=False,
 )
 
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ---------- KAFKA ----------
+
+consumer = Consumer({
+    "bootstrap.servers": KAFKA_BOOTSTRAP,
+    "group.id": "ml-service",
+    "auto.offset.reset": "earliest",
+})
+
+producer = Producer({"bootstrap.servers": KAFKA_BOOTSTRAP})
+
+consumer.subscribe([INPUT_TOPIC])
+
+
+# ---------- PROCESS FUNCTION ----------
+
+def process_job(message):
+    data = json.loads(message.value().decode())
+
+    job_id = data["jobId"]
+    input_key = data["inputKey"]
+    output_key = f"output/{job_id}.wav"
+
+    try:
+        print(f"Processing job {job_id}")
+
+        # 🔹 1. Скачать файл из MinIO
+        response = minio_client.get_object(BUCKET, input_key)
+        input_bytes = response.read()
+
+        # 🔹 2. ML обработка
+        result_buf = process_single_file(model, input_bytes, device)
+        result_buf.seek(0)
+
+        # 🔹 3. Загрузить результат в MinIO
+        minio_client.put_object(
+            BUCKET,
+            output_key,
+            result_buf,
+            length=-1,
+            part_size=10 * 1024 * 1024,
+            content_type="audio/wav",
+        )
+
+        # 🔹 4. Обновить статус Job
+        requests.put(
+            f"{BACKEND_URL}/{job_id}",
+            json={
+                "status": "Completed",
+                "outputKey": output_key
+            },
+            timeout=10
+        )
+
+        # 🔹 5. Отправить Kafka событие
+        producer.produce(
+            OUTPUT_TOPIC_OK,
+            json.dumps({
+                "jobId": job_id,
+                "outputKey": output_key
+            }).encode()
+        )
+        producer.flush()
+
+        print(f"Job {job_id} completed")
+
+    except Exception as e:
+        print(f"Job {job_id} failed: {e}")
+
+        producer.produce(
+            OUTPUT_TOPIC_FAIL,
+            json.dumps({
+                "jobId": job_id,
+                "error": str(e)
+            }).encode()
+        )
+        producer.flush()
+
+
+# ---------- BACKGROUND LOOP ----------
+
+@app.on_event("startup")
+def start_consumer():
+    import threading
+
+    def loop():
+        while True:
+            msg = consumer.poll(1.0)
+            if msg is None:
+                continue
+            if msg.error():
+                print(msg.error())
+                continue
+
+            process_job(msg)
+
+    threading.Thread(target=loop, daemon=True).start()
 
 
 @app.get("/health")
-async def health():
-    """Basic health check endpoint"""
-    return {
-        "status": "ok",
-        "service": "ML Audio Processor",
-        "version": "1.0.0"
-    }
-
-
-@app.get("/health/detailed")
-async def health_detailed():
-    """Detailed health check including dependencies"""
-    kafka_ok, kafka_msg = check_kafka_health()
-    minio_ok, minio_msg = check_minio_health()
-
-    overall_status = "healthy" if kafka_ok and minio_ok else "degraded"
-
-    return {
-        "status": overall_status,
-        "service": "ML Audio Processor",
-        "version": "1.0.0",
-        "dependencies": {
-            "kafka": {
-                "status": "ok" if kafka_ok else "error",
-                "message": kafka_msg
-            },
-            "minio": {
-                "status": "ok" if minio_ok else "error",
-                "message": minio_msg
-            }
-        },
-        "consumer_thread": {
-            "running": consumer_thread is not None and consumer_thread.is_alive(),
-            "daemon": consumer_thread.daemon if consumer_thread else None
-        }
-    }
-
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "service": "ML Audio Processor",
-        "version": "1.0.0",
-        "mode": "worker",
-        "endpoints": {
-            "health": "/health",
-            "health_detailed": "/health/detailed",
-            "docs": "/docs"
-        }
-    }
-
-
-@app.get("/info")
-async def info():
-    """Service information"""
-    kafka_ok, _ = check_kafka_health()
-    minio_ok, _ = check_minio_health()
-
-    return {
-        "name": "ML Audio Processor",
-        "version": "1.0.0",
-        "description": "Asynchronous audio processing with GRU model",
-        "status": {
-            "kafka_connected": kafka_ok,
-            "minio_connected": minio_ok,
-            "consumer_active": consumer_thread is not None and consumer_thread.is_alive()
-        }
-    }
+def health():
+    return {"status": "ok"}

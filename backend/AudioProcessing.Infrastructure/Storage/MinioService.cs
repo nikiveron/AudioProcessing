@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
-using System.Threading;
 
 namespace AudioProcessing.Infrastructure.Storage;
 
@@ -17,13 +16,13 @@ public class MinioService
         _bucket = string.IsNullOrWhiteSpace(s.Bucket) ? "audio" : s.Bucket;
     }
 
-    public async Task EnsureBucketExistsAsync()
+    public async Task EnsureBucketExistsAsync(CancellationToken ct)
     {
         try
         {
-            bool exists = await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucket));
+            bool exists = await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucket), ct);
             if (!exists)
-                await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucket));
+                await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucket), ct);
         }
         catch (Exception ex)
         {
@@ -33,29 +32,31 @@ public class MinioService
         }
     }
 
-    public async Task UploadObjectAsync(string objectName, Stream data, string contentType)
+    public async Task UploadObjectAsync(string objectName, Stream data, string contentType, CancellationToken ct)
     {
-        if (data == null) throw new ArgumentNullException(nameof(data));
+        ArgumentNullException.ThrowIfNull(data);
+
         await _client.PutObjectAsync(new PutObjectArgs()
             .WithBucket(_bucket)
             .WithObject(objectName)
             .WithStreamData(data)
             .WithObjectSize(data.Length)
-            .WithContentType(contentType));
+            .WithContentType(contentType), 
+            ct);
     }
 
-    public async Task<Stream> GetObjectStreamAsync(string objectName)
+    public async Task<Stream> GetObjectStreamAsync(string objectName, CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await _client.GetObjectAsync(new GetObjectArgs().WithBucket(_bucket).WithObject(objectName)
-            .WithCallbackStream((stream) => stream.CopyTo(ms)));
+            .WithCallbackStream((stream) => stream.CopyTo(ms)), cancellationToken);
         ms.Position = 0;
         return ms;
     }
 
     public string PresignedGetObject(string objectName, int expirySeconds = 3600)
     {
-        var args = new Minio.DataModel.Args.PresignedGetObjectArgs()
+        var args = new PresignedGetObjectArgs()
             .WithBucket(_bucket)
             .WithObject(objectName)
             .WithExpiry(expirySeconds);
@@ -65,7 +66,7 @@ public class MinioService
 
     public string PresignedPutObject(string objectName, int expirySeconds = 3600)
     {
-        var args = new Minio.DataModel.Args.PresignedPutObjectArgs()
+        var args = new PresignedPutObjectArgs()
             .WithBucket(_bucket)
             .WithObject(objectName)
             .WithExpiry(expirySeconds);
@@ -73,4 +74,16 @@ public class MinioService
         return _client.PresignedPutObjectAsync(args).GetAwaiter().GetResult();
     }
 
+    public async Task<bool> ObjectExistsAsync(string objectName, CancellationToken ct)
+    {
+        try
+        {
+            await _client.StatObjectAsync(new StatObjectArgs().WithBucket(_bucket).WithObject(objectName), ct);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

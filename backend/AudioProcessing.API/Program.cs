@@ -1,4 +1,5 @@
 using AudioProcessing.Infrastructure.Context;
+using AudioProcessing.Infrastructure.Repositories;
 using AudioProcessing.Infrastructure.Storage;
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,11 @@ using Scalar.AspNetCore;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 var configuration = builder.Configuration;
 
 // --- Привязка настроек Minio (Options pattern)
@@ -21,14 +27,13 @@ if (string.IsNullOrWhiteSpace(pgConn))
     Console.WriteLine("ERROR: ConnectionStrings:Postgres is not set. Check your .env or configuration.");
 }
 
-// Add services to the container.
-builder.Services.AddOpenApi();
-builder.Services.AddControllers();
-
 // DbContext: если connection string пуст — UseNpgsql всё равно вызовет ошибку при миграции/подключении
 builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(pgConn ?? throw new InvalidOperationException("ConnectionStrings:Postgres is missing"),
         b => b.MigrationsAssembly("AudioProcessing.Infrastructure")));
+
+builder.Services.AddScoped<JobsRepository>();
+builder.Services.AddScoped<TracksRepository>();
 
 // Kafka producer — читаем key "Kafka:BootstrapServers"
 var kafkaBootstrap = configuration["Kafka:BootstrapServers"];
@@ -47,7 +52,7 @@ builder.Services.AddSingleton(sp =>
         throw new InvalidOperationException("Minio:Endpoint is not configured. Set Minio:Endpoint in environment or appsettings.");
 
     // Создаём клиент (Minio .NET API)
-    var builderClient = new Minio.MinioClient()
+    var builderClient = new MinioClient()
         .WithEndpoint(minioSettings.Endpoint)
         .WithCredentials(minioSettings.AccessKey, minioSettings.SecretKey);
 
@@ -62,6 +67,10 @@ builder.Services.AddSingleton<MinioService>();
 // Hosted services, healthchecks, etc.
 builder.Services.AddHealthChecks();
 
+// Add services to the container.
+builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Выполнять миграцию и bucket-инициализацию безопасно: оборачиваем в try/catch
@@ -74,6 +83,7 @@ using (var scope = app.Services.CreateScope())
     {
         var db = sp.GetRequiredService<AppDbContext>();
         db.Database.Migrate();
+        Debug.WriteLine($"Database migration completed successfully.");
     }
     catch (Exception ex)
     {
@@ -85,7 +95,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var minioService = sp.GetRequiredService<MinioService>();
-        await minioService.EnsureBucketExistsAsync();
+        await minioService.EnsureBucketExistsAsync(CancellationToken.None);
+        Debug.WriteLine($"MinIO initialization completed successfully.");
     }
     catch (Exception ex)
     {

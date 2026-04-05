@@ -11,11 +11,11 @@ public class HealthController : ControllerBase
     public HealthController(MinioService minio) { _minio = minio; }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(CancellationToken ct)
     {
         try
         {
-            await _minio.EnsureBucketExistsAsync();
+            await _minio.EnsureBucketExistsAsync(ct);
             return Ok(new { status = "ok" });
         }
         catch (Exception ex)

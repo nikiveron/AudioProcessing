@@ -16,6 +16,9 @@ public class TrackEntity
     [Column("filename")]
     public string Filename { get; set; } = string.Empty;
 
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     [Column("deleted_at")]
     public DateTime? DeletedAt { get; set; }
 }

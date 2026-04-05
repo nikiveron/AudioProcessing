@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AudioProcessing.Application\AudioProcessing.Application.csproj" />
+    <ProjectReference Include="..\AudioProcessing.Domain\AudioProcessing.Domain.csproj" />
     <ProjectReference Include="..\AudioProcessing.Infrastructure\AudioProcessing.Infrastructure.csproj" />
   </ItemGroup>
 

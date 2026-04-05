@@ -12,12 +12,9 @@ RUN pip install --no-cache-dir poetry==1.7.0
 
 WORKDIR /app
 
-# Copy Poetry files
-COPY pyproject.toml poetry.lock* ./
+RUN pip install -r requirements.txt
 
-# Install Python dependencies
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+COPY app/ .
 
 # Copy application code
 COPY app ./app

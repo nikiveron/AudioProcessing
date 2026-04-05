@@ -1,5 +1,4 @@
-﻿
-namespace AudioProcessing.Domain.Entities.FileUpload;
+﻿namespace AudioProcessing.Domain.DTOs.FileUpload;
 
 public class FileUploadRequest
 {

@@ -31,28 +31,28 @@ public class TracksController : ControllerBase
     {
         _logger.LogInformation("TracksController поступил POST запрос для Filename {filename}", req.Filename);
         // проверяем полученные данные
-        if (string.IsNullOrWhiteSpace(req.Filename) || string.IsNullOrWhiteSpace(req.StorageKey))
+        if (string.IsNullOrWhiteSpace(req.Filename) || string.IsNullOrWhiteSpace(req.InputKey) || string.IsNullOrWhiteSpace(req.OutputKey))
         {
-            string exception = "Filename and StorageKey are required";
+            string exception = "Filename, OutputKey и InputKey обязательные параметры";
             _logger.LogInformation("TracksController ошибка 400 для Filename {filename}: {exception}", req.Filename, exception);
             return BadRequest(new { message = exception });
         }
 
         // проверяем существует ли файл в minio
-        bool exists = await _minio.ObjectExistsAsync(req.StorageKey, ct);
+        bool exists = await _minio.ObjectExistsAsync(req.InputKey, ct);
         if (!exists)
         {
-            string exception = "File not found in storage";
+            string exception = "Файл не был найден в хранилище Minio";
             _logger.LogInformation("TracksController ошибка 400 для Filename {filename}: {exception}", req.Filename, exception);
             return BadRequest(exception);
         }
 
         // Проверяем, не создан ли уже Track
-        bool alreadyExists = _tracksRepository.ReadList().Any(t => t.StorageKey == req.StorageKey);
+        bool alreadyExists = _tracksRepository.ReadList().Any(t => t.InputKey == req.InputKey);
 
         if (alreadyExists)
         {
-            string exception = "Track already exists";
+            string exception = "Трек уже существует в базе";
             _logger.LogInformation("TracksController ошибка 409 для Filename {filename}: {exception}", req.Filename, exception);
             return Conflict(new { message = exception });
         }
@@ -61,7 +61,8 @@ public class TracksController : ControllerBase
         {
             TrackId = Guid.NewGuid(),
             Filename = req.Filename,
-            StorageKey = req.StorageKey,
+            InputKey = req.InputKey,
+            OutputKey = req.OutputKey,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -75,7 +76,8 @@ public class TracksController : ControllerBase
             {
                 trackId = track.TrackId,
                 filename = track.Filename,
-                storageKey = track.StorageKey,
+                inputKey = track.InputKey,
+                outputKey = req.OutputKey,
                 createdAt = track.CreatedAt
             });
     }

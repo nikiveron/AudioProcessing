@@ -34,14 +34,14 @@ public class ProcessController(IProducer<Null, string> producer, JobsRepository 
             return NotFound();
         }
 
-        var job = new JobEntity { JobId = Guid.NewGuid(), TrackId = track.TrackId, Status = JobStatus.Queued, InputKey = track.StorageKey, CreatedAt = DateTime.UtcNow };
+        var job = new JobEntity { JobId = Guid.NewGuid(), TrackId = track.TrackId, Status = JobStatus.Queued, InputKey = track.InputKey, OutputKey = track.OutputKey, CreatedAt = DateTime.UtcNow };
         await _jobsRepository.Create(job, ct);
 
         var message = JsonSerializer.Serialize(new
         {
             jobId = job.JobId,
             inputKey = job.InputKey,
-            outputKey = $"results/{job.JobId}_{track.Filename}",
+            outputKey = job.OutputKey,
             parameters = new { genre = req.Genre, instrument = req.Instrument }
         });
 

@@ -10,6 +10,8 @@ public class FilesController(MinioService minio, ILogger<FilesController> logger
 {
     private readonly MinioService _minio = minio;
     private readonly ILogger<FilesController> _logger = logger;
+    private const string _inputPath = "input";
+    private const string _outputPath = "output";
 
     /// <summary>
     /// Метод выдаёт presigned URL для загрузки в MinIO
@@ -28,20 +30,76 @@ public class FilesController(MinioService minio, ILogger<FilesController> logger
 
         try
         {
-            string objectKey = $"uploads/{Guid.NewGuid()}_{request.Filename}";
-            string url = _minio.PresignedPutObject(objectKey, 3600);
+            var trackGuid = Guid.NewGuid();
+            string inputKey = $"{_inputPath}/{trackGuid}_{request.Filename}";
+            string outputKey = $"{_outputPath}/{trackGuid}_{request.Filename}";
+            string url = _minio.PresignedPutObject(inputKey, 3600);
 
             _logger.LogInformation("FilesController место для файла {request} выделено", request.Filename);
             return Ok(new
             {
                 uploadUrl = url,
-                objectKey
+                inputKey,
+                outputKey
             });
         }
         catch (Exception ex)
         {
             _logger.LogInformation("FilesController ошибка 500 для файла {request}", request.Filename);
             return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPost("upload")]
+    public async Task<IActionResult> UploadFile([FromForm] IFormFile file, CancellationToken ct)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "No file uploaded" });
+
+        var trackGuid = Guid.NewGuid();
+        string inputKey = $"input/{trackGuid}_{file.FileName}";
+        string outputKey = $"output/{trackGuid}_{file.FileName}";
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            await _minio.UploadObjectAsync(inputKey, stream, file.ContentType, ct);
+
+            _logger.LogInformation("File {Filename} uploaded to MinIO at {Key}", file.FileName, inputKey);
+
+            return Ok(new
+            {
+                inputKey,
+                outputKey
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading file {Filename}", file.FileName);
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("download")]
+    public async Task<IActionResult> DownloadFile([FromQuery] string objectKey, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(objectKey))
+            return BadRequest("objectKey is required");
+
+        try
+        {
+            var stream = await _minio.GetObjectStreamAsync(objectKey, ct);
+
+            var fileName = Path.GetFileName(objectKey);
+
+            _logger.LogInformation("Downloading file {objectKey} from MinIO", objectKey);
+
+            return File(stream, "audio/wav", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading file {objectKey}", objectKey);
+            return NotFound();
         }
     }
 }

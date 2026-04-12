@@ -1,3 +1,4 @@
+using AudioProcessing.API.Services;
 using AudioProcessing.Infrastructure.Context;
 using AudioProcessing.Infrastructure.Repositories;
 using AudioProcessing.Infrastructure.Storage;
@@ -51,6 +52,8 @@ builder.Services.AddSingleton(sp =>
     if (string.IsNullOrWhiteSpace(minioSettings.Endpoint))
         throw new InvalidOperationException("Minio:Endpoint is not configured. Set Minio:Endpoint in environment or appsettings.");
 
+    Console.WriteLine($"{minioSettings.ToString()}");
+
     // Создаём клиент (Minio .NET API)
     var builderClient = new MinioClient()
         .WithEndpoint(minioSettings.Endpoint)
@@ -61,8 +64,22 @@ builder.Services.AddSingleton(sp =>
     return client;
 });
 
+builder.Services.AddHostedService<JobStatusConsumer>();
 // MinioService должен получать IMinioClient и настройки
 builder.Services.AddSingleton<MinioService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")  // Vue приложение
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();  // нужно для SignalR
+    });
+});
+
+builder.Services.AddSignalR();
 
 // Hosted services, healthchecks, etc.
 builder.Services.AddHealthChecks();
@@ -123,6 +140,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+app.UseCors("AllowFrontend");
 app.UseRouting();
 
 // Для разработки можно временно отключить HttpsRedirect, если не настроены certs в контейнере
@@ -130,5 +148,7 @@ app.UseRouting();
 
 app.MapHealthChecks("/api/health");
 app.MapControllers();
+
+app.MapHub<JobHub>("/hubs/jobs");
 
 app.Run();

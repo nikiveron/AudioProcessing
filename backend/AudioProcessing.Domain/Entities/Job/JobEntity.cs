@@ -30,6 +30,9 @@ public class JobEntity
 
     [Column("finished_at")]
     public DateTime? FinishedAt { get; set; }
+
+    [Column("error_description")]
+    public string? ErrorDescription { get; set; }
 }
 
 public enum JobStatus
@@ -38,5 +41,5 @@ public enum JobStatus
     Queued,
     Running,
     Success,
-    Error
+    Failed
 }

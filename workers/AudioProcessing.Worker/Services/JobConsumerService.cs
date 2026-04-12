@@ -127,21 +127,13 @@ public class JobConsumerService : BackgroundService
                     continue;
                 }
                 job.Status = JobStatus.Running; 
-                job.StartedAt = DateTime.UtcNow;
                 await jobsRepository.Update(job, ct);
 
-                // Загрузка входного файла из MinIO в виде потока, без сохранения на диск.
-                using var inStream = await minio.GetObjectStreamAsync(inputKey, ct);
-
-                //==== ИМИТАЦИЯ ОБРАБОТКИ - ЗАМЕНИТЬ НА ВЫЗОВ ML-SERVICE ====
-                var preparedKey = $"prepared/{jobId}.wav";
-                using var outStream = new MemoryStream();
-                await inStream.CopyToAsync(outStream, ct); // файл просто копируется
-                outStream.Position = 0;
                 var preparedMessage = new
                 {
                     jobId,
-                    preparedKey,
+                    inputKey,
+                    outputKey,
                     parameters = new
                     {
                         genre = (MusicGenre)parameters.GetProperty("genre").GetInt32(),
@@ -150,12 +142,7 @@ public class JobConsumerService : BackgroundService
                 };
                 var messageJson = JsonSerializer.Serialize(preparedMessage);
                 await _producer.ProduceAsync(_outputTopic, new Message<Null, string> { Value = messageJson }, ct);
-                _logger.LogInformation("Worker published job {JobId} to {OutputTopic}", jobId, _outputTopic);
-                job.Status = JobStatus.Success;
-                await jobsRepository.Update(job, ct);
-                // =============================================================
 
-                // Подтверждаем исходное сообщение
                 _consumer.Commit(cr);
             }
             catch (ConsumeException ex)

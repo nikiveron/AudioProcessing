@@ -2,6 +2,7 @@
 
 public class CreateTrackRequest
 {
-    public string Filename { get; set; } = null!;
-    public string StorageKey { get; set; } = null!;
+    public string Filename { get; set; } = string.Empty;
+    public string InputKey { get; set; } = string.Empty;
+    public string OutputKey { get; set; } = string.Empty;
 }

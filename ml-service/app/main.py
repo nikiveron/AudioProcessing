@@ -7,6 +7,7 @@ from confluent_kafka import Consumer, Producer
 from minio import Minio
 from model import GRUSeparator
 from utils import process_single_file
+from datetime import datetime
 
 from confluent_kafka import Consumer
 from fastapi import FastAPI
@@ -62,7 +63,7 @@ def process_job(message):
 
     job_id = data["jobId"]
     input_key = data["inputKey"]
-    output_key = f"output/{job_id}.wav"
+    output_key = data["outputKey"]
 
     try:
         print(f"Processing job {job_id}")
@@ -90,7 +91,8 @@ def process_job(message):
             f"{BACKEND_URL}/{job_id}",
             json={
                 "status": "Completed",
-                "outputKey": output_key
+                "outputKey": output_key,
+                "finishedAt": datetime.utcnow().isoformat()
             },
             timeout=10
         )
@@ -109,6 +111,15 @@ def process_job(message):
 
     except Exception as e:
         print(f"Job {job_id} failed: {e}")
+
+        requests.put(
+            f"{BACKEND_URL}/{job_id}",
+            json={
+                "status": "Failed",
+                "finishedAt": datetime.utcnow().isoformat()
+            },
+            timeout=10
+        )
 
         producer.produce(
             OUTPUT_TOPIC_FAIL,

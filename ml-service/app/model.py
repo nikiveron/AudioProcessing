@@ -1,6 +1,5 @@
 import torch.nn as nn
 
-
 class GRUSeparator(nn.Module):
     def __init__(self, input_size=128, hidden_size=128, num_layers=2):
         super(GRUSeparator, self).__init__()

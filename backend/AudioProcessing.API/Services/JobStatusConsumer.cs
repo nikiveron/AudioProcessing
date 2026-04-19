@@ -3,7 +3,6 @@ using AudioProcessing.Infrastructure.Repositories;
 using Confluent.Kafka;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
-using AudioProcessing.API.Services;
 
 namespace AudioProcessing.API.Services;
 

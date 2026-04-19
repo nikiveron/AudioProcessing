@@ -9,9 +9,7 @@ from model import GRUSeparator
 from utils import process_single_file
 from datetime import datetime
 
-from confluent_kafka import Consumer
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI(title="ML Audio Processor")
 
 # ---------- CONFIG ----------
 

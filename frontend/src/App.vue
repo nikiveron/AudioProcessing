@@ -117,7 +117,7 @@
         </button>
 
         <div v-if="resultUrl">
-            <h2>Результат:</h2>
+            <h3>Результат:</h3>
             <audio :src="resultUrl" controls></audio>
         </div>
     </div>

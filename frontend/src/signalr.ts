@@ -4,3 +4,12 @@ export const connection = new signalR.HubConnectionBuilder()
     .withUrl("http://localhost:5000/hubs/jobs")
     .withAutomaticReconnect()
     .build()
+
+let started = false
+
+export async function ensureSignalRStarted() {
+    if (started) return
+    await connection.start()
+    started = true
+    console.log("SignalR connected")
+}

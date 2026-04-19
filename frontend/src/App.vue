@@ -1,7 +1,7 @@
 <script setup lang="ts">
-    import { ref } from "vue"
+    import { ref, onMounted } from "vue"
     import { getPresignedUpload, createTrack, startProcess } from "./api"
-    import { connection } from "./signalr"
+    import { connection, ensureSignalRStarted } from "./signalr"
 
     const file = ref<File | null>(null)
     const genre = ref("Classic")
@@ -17,8 +17,9 @@
             return
         }
 
-        loading.value = true
+        resultUrl.value = ""
         errorMessage.value = ""
+        loading.value = true
 
         try {
             // 1️ Загружаем файл через бекенд → MinIO
@@ -47,14 +48,8 @@
             console.log("Track saved in DB:", track)
 
             // 3️ Подписка на SignalR
-            await connection.start()
+            await ensureSignalRStarted()
             await connection.invoke("SubscribeToJob", track.outputKey)
-
-            connection.on("JobFinished", async (msg) => {
-                if (msg.outputKey !== track.outputKey) return
-                resultUrl.value = `http://localhost:5000/api/files/download?objectKey=${encodeURIComponent(msg.outputKey)}`
-                loading.value = false
-            })
 
             // 4️ Маппинг enum → числа
             const genreEnumMap: Record<string, number> = { Classic: 0, Jazz: 1, Rock: 2 }
@@ -75,32 +70,54 @@
             loading.value = false
         }
     }
+
+    function onFileSelected(event: Event) {
+        const target = event.target as HTMLInputElement
+        const selectedFile = target.files?.[0] ?? null
+
+        file.value = selectedFile
+
+        resultUrl.value = ""
+        errorMessage.value = ""
+
+        loading.value = false
+    }
+
+    onMounted(async () => {
+        await ensureSignalRStarted()
+
+        connection.on("JobFinished", (msg) => {
+            console.log("Job finished event:", msg)
+            resultUrl.value = `http://localhost:5000/api/files/download?objectKey=${encodeURIComponent(msg.outputKey)}`
+            loading.value = false
+        })
+    })
 </script>
 
 <template>
     <div class="container">
-        <h1>Audio AI Processor</h1>
+        <h1>Sonara ~ AI аудио обработчик</h1>
 
-        <input type="file" accept="audio/*" @change="e => file = e.target.files[0]" />
+        <input type="file" accept="audio/*" @change="onFileSelected" />
 
         <select v-model="genre">
-            <option>Classic</option>
-            <option>Jazz</option>
-            <option>Rock</option>
+            <option value="Classic">Классика</option>
+            <option value="Jazz">Джаз</option>
+            <option value="Rock">Рок</option>
         </select>
 
         <select v-model="instrument">
-            <option>Guitar</option>
-            <option>Piano</option>
-            <option>Vocal</option>
+            <option value="Guitar">Гитара</option>
+            <option value="Piano">Пианино</option>
+            <option value="Vocal">Вокал</option>
         </select>
 
         <button @click="uploadAndProcess" :disabled="loading">
-            {{ loading ? "Processing..." : "Upload & Process" }}
+            {{ loading ? "Обработка..." : "Загрузить и обработать" }}
         </button>
 
         <div v-if="resultUrl">
-            <h2>Result:</h2>
+            <h2>Результат:</h2>
             <audio :src="resultUrl" controls></audio>
         </div>
     </div>

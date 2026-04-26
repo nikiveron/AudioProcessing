@@ -89,12 +89,20 @@ public class FilesController(MinioService minio, ILogger<FilesController> logger
         try
         {
             var stream = await _minio.GetObjectStreamAsync(objectKey, ct);
-
             var fileName = Path.GetFileName(objectKey);
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+
+            var contentType = ext switch
+            {
+                ".wav" => "audio/wav",
+                ".mp3" => "audio/mpeg",
+                ".ogg" => "audio/ogg",
+                _ => "application/octet-stream"
+            };
 
             _logger.LogInformation("Downloading file {objectKey} from MinIO", objectKey);
 
-            return File(stream, "audio/wav", fileName);
+            return File(stream, contentType, fileName);
         }
         catch (Exception ex)
         {

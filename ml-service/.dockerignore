@@ -1,11 +1,54 @@
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.env
+# Git
 .git
 .gitignore
-README.md
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+*.egg-info/
+.eggs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Build artifacts
+*.egg
+build/
+dist/
+
+# Data files (not needed in container)
+data/
+*.wav
+*.mp3
+*.flac
+
+# Scripts and notebooks
+script.py
+test.sh
+*.ipynb
+
+# Documentation
+*.md
+!requirements.txt
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log

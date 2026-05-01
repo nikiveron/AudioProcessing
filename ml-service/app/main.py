@@ -63,6 +63,12 @@ def process_job(message):
     input_key = data["inputKey"]
     output_key = data["outputKey"]
 
+    parameters = data["parameters"]
+    genre = parameters["genre"]          
+    instrument = parameters["instrument"]
+
+    print(f"Job {job_id} parameters: genre={genre}, instrument={instrument}")
+
     try:
         print(f"Processing job {job_id}")
 

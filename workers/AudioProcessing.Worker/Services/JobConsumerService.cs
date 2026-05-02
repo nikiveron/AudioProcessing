@@ -1,7 +1,6 @@
 ﻿using AudioProcessing.Domain;
-using AudioProcessing.Domain.Entities.Job;
-using AudioProcessing.Infrastructure.Repositories;
-using AudioProcessing.Infrastructure.Storage;
+using AudioProcessing.Domain.DTOs.Job;
+using AudioProcessing.Worker.Services.Interfaces;
 using Confluent.Kafka;
 using System.Text.Json;
 
@@ -11,139 +10,45 @@ public class JobConsumerService : BackgroundService
 {
     private readonly ILogger<JobConsumerService> _logger;
     private readonly IConsumer<Null, string> _consumer;
-    private readonly IProducer<Null, string> _producer;
-    private readonly IServiceProvider _serviceProvider; 
-    private readonly string _inputTopic = "job.created";
-    private readonly string _outputTopic = "job.prepared";
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public JobConsumerService(ILogger<JobConsumerService> logger, IServiceProvider sp, IConfiguration cfg)
+    public JobConsumerService(ILogger<JobConsumerService> logger, IServiceScopeFactory scopeFactory, IConfiguration cfg)
     {
+        _scopeFactory = scopeFactory;
         _logger = logger;
-        _serviceProvider = sp;
-        var consumerConfig = new ConsumerConfig
+
+        var config = new ConsumerConfig
         {
             BootstrapServers = cfg["Kafka:BootstrapServers"],
             GroupId = "audio-workers-group",
             AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = false,
-
-            SessionTimeoutMs = 60000,
-            MaxPollIntervalMs = 300000,
-
-            EnablePartitionEof = true,
-            AllowAutoCreateTopics = true
+            EnableAutoCommit = false
         };
 
-        var producerConfig = new ProducerConfig
-        {
-            BootstrapServers = cfg["Kafka:BootstrapServers"],
-            EnableIdempotence = true,
-            Acks = Acks.All
-        };
-
-        int retryCount = 0;
-        const int maxRetries = 10;
-
-        while (retryCount < maxRetries)
-        {
-            try
-            {
-                _consumer = new ConsumerBuilder<Null, string>(consumerConfig)
-                    .SetErrorHandler((_, e) => _logger.LogError("Kafka error: {Reason}", e.Reason))
-                    .SetLogHandler((_, log) => _logger.LogInformation("Kafka log: {Message}", log.Message))
-                    .Build();
-
-                _producer = new ProducerBuilder<Null, string>(producerConfig)
-                    .SetErrorHandler((_, e) => _logger.LogError("Producer error: {Reason}", e.Reason))
-                    .Build();
-
-                _consumer.Subscribe(_inputTopic);
-                // Небольшая пауза, чтобы consumer успел подключиться
-                Thread.Sleep(1000);
-                _logger.LogInformation("Worker connected to Kafka. Listening to {InputTopic}, will produce to {OutputTopic}", _inputTopic, _outputTopic);
-                break;
-            }
-            catch (Exception ex)
-            {
-                retryCount++;
-                _logger.LogWarning(ex, "Failed to connect to Kafka (attempt {RetryCount}/{MaxRetries}). Retrying in 5 seconds...", retryCount, maxRetries);
-
-                if (retryCount >= maxRetries)
-                {
-                    _logger.LogError("Could not connect to Kafka after {MaxRetries} attempts", maxRetries);
-                    throw;
-                }
-
-                Thread.Sleep(5000); // Ждем 5 секунд перед следующей попыткой
-            }
-        }
+        _consumer = new ConsumerBuilder<Null, string>(config).Build();
+        _consumer.Subscribe(KafkaTopics.JobCreated);
     }
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        if (_consumer == null)
-        {
-            _logger.LogError("Consumer не инициализирован");
-            return;
-        }
+        _logger.LogInformation("Worker запущен успешно!");
 
         while (!ct.IsCancellationRequested)
         {
             try
             {
-                // Получаем сообщение из job.created
-                var cr = _consumer.Consume(ct);
-                if (cr == null || cr.IsPartitionEOF)
-                {
-                    _logger.LogDebug("Достигнут конец партиции, в ожидании новых сообщений...");
-                    await Task.Delay(100, ct);
+                var result = _consumer.Consume(ct);
+                if (result?.Message?.Value is null)
                     continue;
-                }
 
-                // десереализация сообщения
-                var payload = JsonSerializer.Deserialize<JsonElement>(cr.Message.Value);
-                var jobId = Guid.Parse(payload.GetProperty("jobId").GetString());
-                var inputKey = payload.GetProperty("inputKey").GetString();
-                var outputKey = payload.GetProperty("outputKey").GetString();
-                var parameters = payload.GetProperty("parameters");
+                using var scope = _scopeFactory.CreateScope();
+                var service = scope.ServiceProvider.GetRequiredService<IJobPreparationService>();
 
-                _logger.LogInformation("Worker получил job {JobId} из топика {InputTopic}", jobId, _inputTopic);
+                var evt = JsonSerializer.Deserialize<JobCreatedEvent>(result.Message.Value)
+                    ?? throw new InvalidOperationException("Не валидное сообщение из Kafka");
+                await service.PrepareJobAsync(evt, ct);
 
-                // новый DI-scope на каждую задачу для
-                // DbContext корректно создавался и уничтожался
-                // не было утечек соединений с БД
-                using var scope = _serviceProvider.CreateScope();
-
-                // получение сервисов
-                var jobsRepository = scope.ServiceProvider.GetRequiredService<JobsRepository>();
-                var minio = scope.ServiceProvider.GetRequiredService<MinioService>();
-
-                // обновление статуса задания
-                JobEntity? job = await jobsRepository.Read(jobId, ct);
-                if (job == null)
-                {
-                    _logger.LogError("Job {JobId} не была найдена в базе данных", jobId);
-                    _consumer.Commit(cr);
-                    continue;
-                }
-                job.Status = JobStatus.Running; 
-                await jobsRepository.Update(job, ct);
-
-                var preparedMessage = new
-                {
-                    jobId,
-                    inputKey,
-                    outputKey,
-                    parameters = new
-                    {
-                        genre = Enum.Parse<MusicGenre>(parameters.GetProperty("genre").GetString()),
-                        instrument = Enum.Parse<MusicInstrument>(parameters.GetProperty("instrument").GetString())
-                    }
-                };
-                var messageJson = JsonSerializer.Serialize(preparedMessage);
-                await _producer.ProduceAsync(_outputTopic, new Message<Null, string> { Value = messageJson }, ct);
-
-                _consumer.Commit(cr);
+                _consumer.Commit(result);
             }
             catch (ConsumeException ex)
             {
@@ -154,6 +59,7 @@ public class JobConsumerService : BackgroundService
                 _logger.LogError(ex, "Ошибка обработки job: Exception");
             }
         }
+        _consumer.Close();
     }
 
     /// <summary>

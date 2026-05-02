@@ -1,27 +1,24 @@
-﻿using AudioProcessing.Domain.Entities.Job;
-using AudioProcessing.Infrastructure.Repositories;
+﻿using AudioProcessing.API.Services.Interfaces;
+using AudioProcessing.Domain;
+using AudioProcessing.Domain.DTOs.Job;
 using Confluent.Kafka;
 using System.Text.Json;
-using Microsoft.AspNetCore.SignalR;
 
 namespace AudioProcessing.API.Services;
 
 public class JobStatusConsumer : BackgroundService
 {
     private readonly ILogger<JobStatusConsumer> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConsumer<Null, string> _consumer;
-    private readonly IHubContext<JobHub> _hub;
 
     public JobStatusConsumer(
         ILogger<JobStatusConsumer> logger,
         IConfiguration cfg,
-        IServiceProvider sp,
-        IHubContext<JobHub> hub)
+        IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
-        _serviceProvider = sp;
-        _hub = hub;
+        _scopeFactory = scopeFactory;
 
         var config = new ConsumerConfig
         {
@@ -32,75 +29,46 @@ public class JobStatusConsumer : BackgroundService
         };
 
         _consumer = new ConsumerBuilder<Null, string>(config).Build();
-        _consumer.Subscribe(["job.completed", "job.failed"]);
+        _consumer.Subscribe([KafkaTopics.JobCompleted, KafkaTopics.JobFailed]);
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => ConsumeLoop(stoppingToken), stoppingToken);
+        return Task.Run(() => ConsumeLoop(cancellationToken), cancellationToken);
     }
 
-    private async Task ConsumeLoop(CancellationToken stoppingToken)
+    private async Task ConsumeLoop(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Kafka JobStatusConsumer started");
+        _logger.LogInformation("Kafka JobStatusConsumer запущен");
 
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var cr = _consumer.Consume(TimeSpan.FromSeconds(1));
-                if (cr == null || cr.Message?.Value == null)
-                {
-                    await Task.Delay(200, stoppingToken);
+                var result = _consumer.Consume(TimeSpan.FromSeconds(1));
+                if (result?.Message?.Value is null)
                     continue;
-                }
 
-                var payload = JsonSerializer.Deserialize<JsonElement>(cr.Message.Value);
-                var jobId = Guid.Parse(payload.GetProperty("jobId").GetString());
-                var outputKey = payload.TryGetProperty("outputKey", out var ok) ? ok.GetString() : null;
-                var error = payload.TryGetProperty("error", out var err) ? err.GetString() : null;
+                using var scope = _scopeFactory.CreateScope();
+                var service = scope.ServiceProvider.GetRequiredService<IJobStatusService>();
 
-                using var scope = _serviceProvider.CreateScope();
-                var repo = scope.ServiceProvider.GetRequiredService<JobsRepository>();
+                var evt = JsonSerializer.Deserialize<JobStatusEvent>(result.Message.Value) 
+                    ?? throw new InvalidOperationException("Не валидное сообщение из Kafka");
+                await service.HandleStatusAsync(result.Topic, evt, cancellationToken);
 
-                var job = await repo.Read(jobId, stoppingToken);
-                if (job != null)
-                {
-                    job.Status = cr.Topic == "job.completed"
-                        ? JobStatus.Success
-                        : JobStatus.Failed;
-
-                    job.OutputKey = outputKey ?? job.OutputKey;
-                    job.ErrorDescription = error;
-                    job.FinishedAt = DateTime.UtcNow;
-
-                    await repo.Update(job, stoppingToken);
-
-                    await _hub.Clients.Group(job.OutputKey)
-                        .SendAsync("JobFinished", new
-                        {
-                            jobId = job.JobId,
-                            status = job.Status.ToString(),
-                            outputKey = job.OutputKey
-                        }, stoppingToken);
-
-                    _logger.LogInformation("Job {JobId} updated -> {Status}", jobId, job.Status);
-                }
-
-                _consumer.Commit(cr);
+                _consumer.Commit(result);
             }
             catch (ConsumeException ex)
             {
-                _logger.LogError(ex, "Kafka consume error");
+                _logger.LogError(ex, "Ошибка! Kafka consume ошибка: {Error}", ex.Message);
             }
             catch (OperationCanceledException)
             {
-                break;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error in consumer");
-                await Task.Delay(2000, stoppingToken);
+                _logger.LogError(ex, "Ошибка! Неожиданная ошибка в consumer: {Error}", ex.Message);
+                await Task.Delay(2000, cancellationToken);
             }
         }
 

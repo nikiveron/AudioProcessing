@@ -1,5 +1,5 @@
-using AudioProcessing.Infrastructure.Context;
-using AudioProcessing.Infrastructure.Repositories;
+using AudioProcessing.Infrastructure.Database.Context;
+using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Infrastructure.Storage;
 using AudioProcessing.Worker.Services;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +37,7 @@ builder.Services.AddSingleton(sp =>
 });
 
 builder.Services.AddSingleton<MinioService>();
+builder.Services
 
 builder.Services.AddHostedService<JobConsumerService>();
 

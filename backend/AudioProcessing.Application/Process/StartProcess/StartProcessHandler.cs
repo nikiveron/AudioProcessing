@@ -1,7 +1,7 @@
 ﻿using AudioProcessing.Domain;
 using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Domain.Entities.Track;
-using AudioProcessing.Infrastructure.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories;
 using Confluent.Kafka;
 using MediatR;
 using Microsoft.Extensions.Logging;

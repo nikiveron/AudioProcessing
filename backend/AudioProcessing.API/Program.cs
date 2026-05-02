@@ -1,7 +1,7 @@
 using AudioProcessing.API.Services;
 using AudioProcessing.Application;
-using AudioProcessing.Infrastructure.Context;
-using AudioProcessing.Infrastructure.Repositories;
+using AudioProcessing.Infrastructure.Database.Context;
+using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Infrastructure.Storage;
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +44,7 @@ if (string.IsNullOrWhiteSpace(kafkaBootstrap))
     Console.WriteLine("WARNING: Kafka:BootstrapServers is empty. Producer won't be able to send messages.");
 }
 var producerConfig = new ProducerConfig { BootstrapServers = kafkaBootstrap };
-builder.Services.AddSingleton<IProducer<Null, string>>(sp => new ProducerBuilder<Null, string>(producerConfig).Build());
+builder.Services.AddSingleton(sp => new ProducerBuilder<Null, string>(producerConfig).Build());
 
 // Регистрация Minio IMinioClient фабрично (чтобы валидировать конфигурацию в одном месте)
 builder.Services.AddSingleton(sp =>

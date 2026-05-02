@@ -1,6 +1,6 @@
 ﻿using AudioProcessing.Domain;
 using AudioProcessing.Domain.Entities.Job;
-using AudioProcessing.Infrastructure.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;

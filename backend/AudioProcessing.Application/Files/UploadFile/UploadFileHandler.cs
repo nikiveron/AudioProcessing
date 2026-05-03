@@ -1,4 +1,4 @@
-﻿using AudioProcessing.Domain;
+﻿using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Infrastructure.Storage;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -34,8 +34,8 @@ public class UploadFileHandler(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Ошибка загрузки файла {Filename}", request.File.FileName);
-            throw new HttpErrorException("Ошибка при загрузке файла", HttpStatusCode.InternalServerError);
+            logger.LogError(ex, "Ошибка загрузки файла {Filename} в хранилище", request.File.FileName);
+            throw new HttpErrorException("Ошибка при загрузке файла в хранилище", HttpStatusCode.InternalServerError);
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
 namespace AudioProcessing.Infrastructure.Tools;
 
@@ -16,10 +12,9 @@ public class EnumHelper
         foreach (var value in values)
         {
             var memberInfo = type.GetMember(value.ToString()).FirstOrDefault();
-            var enumMemberAttribute = memberInfo?.GetCustomAttributes(typeof(System.Runtime.Serialization.EnumMemberAttribute), false)
-                .FirstOrDefault() as System.Runtime.Serialization.EnumMemberAttribute;
-            var stringValue = enumMemberAttribute != null ? enumMemberAttribute.Value : value.ToString();
-            dict.Add(value, stringValue);
+            var stringValue = memberInfo?.GetCustomAttributes(typeof(EnumMemberAttribute), false)
+                .FirstOrDefault() is EnumMemberAttribute enumMemberAttribute ? enumMemberAttribute.Value : value.ToString();
+            dict.Add(value, stringValue ?? value.ToString());
         }
         return dict;
     }

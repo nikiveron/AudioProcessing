@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace AudioProcessing.Infrastructure.Context;
+namespace AudioProcessing.Infrastructure.Database.Context;
 
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {

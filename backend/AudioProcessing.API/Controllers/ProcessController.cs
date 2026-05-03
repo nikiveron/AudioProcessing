@@ -1,4 +1,5 @@
 ﻿using AudioProcessing.Application.Process.StartProcess;
+using AudioProcessing.Domain;
 using AudioProcessing.Domain.DTOs.Process;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ namespace AudioProcessing.API.Controllers;
 [Route("api/process")]
 public class ProcessController(IMediator mediator) : Controller
 {
-    private readonly string _outputTopic = "job.created";
+    private readonly string _outputTopic = KafkaTopics.JobCreated;
 
     /// <summary>
     /// Принимает параметры (fileKey, genre, instrument), создаёт запись Job в БД и публикует сообщение в Kafka

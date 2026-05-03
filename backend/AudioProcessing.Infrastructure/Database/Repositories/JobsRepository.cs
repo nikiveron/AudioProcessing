@@ -1,17 +1,10 @@
 using AudioProcessing.Domain.Entities.Job;
-using AudioProcessing.Infrastructure.Context;
+using AudioProcessing.Infrastructure.Database.Context;
 
-namespace AudioProcessing.Infrastructure.Repositories;
+namespace AudioProcessing.Infrastructure.Database.Repositories;
 
-public class JobsRepository
+public class JobsRepository(AppDbContext db)
 {
-    private AppDbContext _db;
-
-    public JobsRepository(AppDbContext db)
-    {
-        _db = db;
-    }
-
     public async Task<Guid> Create(JobEntity jobEntity, CancellationToken ct)
     {
         if (jobEntity == null || string.IsNullOrEmpty(jobEntity.InputKey))
@@ -19,15 +12,15 @@ public class JobsRepository
             throw new ArgumentNullException(nameof(jobEntity));
         }
 
-        _db.Jobs.Add(jobEntity);
-        await _db.SaveChangesAsync(ct);
+        db.Jobs.Add(jobEntity);
+        await db.SaveChangesAsync(ct);
         return jobEntity.JobId;
     }
 
 
     public async Task<JobEntity?> Read(Guid id, CancellationToken ct)
     {
-        return await _db.Jobs.FindAsync([id], ct);
+        return await db.Jobs.FindAsync([id], ct);
     }
 
     public async Task Update(JobEntity jobEntity, CancellationToken ct)
@@ -37,7 +30,7 @@ public class JobsRepository
             throw new ArgumentNullException(nameof(jobEntity));
         }
 
-        var job = await _db.Jobs.FindAsync([jobEntity.JobId], ct);
+        var job = await db.Jobs.FindAsync([jobEntity.JobId], ct);
         if (job != null)
         {
             job.JobId = jobEntity.JobId;
@@ -49,17 +42,17 @@ public class JobsRepository
             job.StartedAt = jobEntity.StartedAt;
             job.FinishedAt = jobEntity.FinishedAt;
 
-            await _db.SaveChangesAsync(ct);
+            await db.SaveChangesAsync(ct);
         }
     }
 
     public async Task Delete(Guid id, CancellationToken ct)
     {
-        var job = await _db.Jobs.FindAsync([id], ct);
+        var job = await db.Jobs.FindAsync([id], ct);
         if (job != null)
         {
-            _db.Jobs.Remove(job);
-            await _db.SaveChangesAsync(ct);
+            db.Jobs.Remove(job);
+            await db.SaveChangesAsync(ct);
         }
     }
 }

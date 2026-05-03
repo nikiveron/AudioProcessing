@@ -59,13 +59,13 @@ consumer.subscribe([INPUT_TOPIC])
 def process_job(message):
     data = json.loads(message.value().decode())
 
-    job_id = data["jobId"]
-    input_key = data["inputKey"]
-    output_key = data["outputKey"]
+    job_id = data["JobId"]
+    input_key = data["InputKey"]
+    output_key = data["OutputKey"]
 
-    parameters = data["parameters"]
-    genre = parameters["genre"]          
-    instrument = parameters["instrument"]
+    parameters = data["Parameters"]
+    genre = parameters["Genre"]          
+    instrument = parameters["Instrument"]
 
     print(f"Job {job_id} parameters: genre={genre}, instrument={instrument}")
 
@@ -105,8 +105,8 @@ def process_job(message):
         producer.produce(
             OUTPUT_TOPIC_OK,
             json.dumps({
-                "jobId": job_id,
-                "outputKey": output_key
+                "JobId": job_id,
+                "OutputKey": output_key
             }).encode()
         )
         producer.flush()
@@ -128,8 +128,8 @@ def process_job(message):
         producer.produce(
             OUTPUT_TOPIC_FAIL,
             json.dumps({
-                "jobId": job_id,
-                "error": str(e)
+                "JobId": job_id,
+                "Error": str(e)
             }).encode()
         )
         producer.flush()

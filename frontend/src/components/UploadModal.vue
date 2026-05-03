@@ -1,7 +1,7 @@
 ﻿<script setup lang="ts">
     import { ref } from 'vue'
     import { useProjectStore } from '../stores/projectStore'
-    import { createTrack, startProcess } from '../api'
+    import { uploadTrack, createTrack, startProcess } from '../api'
     import { connection, ensureSignalRStarted } from '../signalr'
 
     const projectStore = useProjectStore()
@@ -60,16 +60,7 @@
             const formData = new FormData()
             formData.append('file', file.value)
 
-            const uploadResponse = await fetch('http://localhost:5000/api/files/upload', {
-                method: 'POST',
-                body: formData,
-            })
-
-            if (!uploadResponse.ok) {
-                throw new Error(`Ошибка загрузки со статусом: ${uploadResponse.status}`)
-            }
-
-            const uploadResult = await uploadResponse.json()
+            const uploadResult = await uploadTrack(formData)
             console.log('Файл загружен:', uploadResult)
 
             // 2. Create track in DB

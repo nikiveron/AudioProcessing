@@ -1,6 +1,6 @@
-﻿using AudioProcessing.Domain;
+﻿using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.Entities.Track;
-using AudioProcessing.Infrastructure.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Infrastructure.Storage;
 using MediatR;
 using Microsoft.Extensions.Logging;

@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using AudioProcessing.Infrastructure.Storage;
-using AudioProcessing.Domain;
 using System.Net;
+using AudioProcessing.Domain.Exceptions;
 
 namespace AudioProcessing.Application.Files.CreatePresignedUrl;
 

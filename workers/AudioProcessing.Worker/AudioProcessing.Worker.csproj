@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\backend\AudioProcessing.Application\AudioProcessing.Application.csproj" />
+    <ProjectReference Include="..\..\backend\AudioProcessing.Domain\AudioProcessing.Domain.csproj" />
     <ProjectReference Include="..\..\backend\AudioProcessing.Infrastructure\AudioProcessing.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
-﻿using AudioProcessing.Domain;
-using AudioProcessing.Infrastructure.Repositories;
+﻿using AudioProcessing.Domain.Exceptions;
+using AudioProcessing.Infrastructure.Database.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;

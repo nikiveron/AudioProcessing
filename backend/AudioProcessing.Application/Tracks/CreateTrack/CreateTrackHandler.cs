@@ -1,4 +1,4 @@
-﻿using AudioProcessing.Domain;
+﻿using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.Entities.Track;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Infrastructure.Storage;

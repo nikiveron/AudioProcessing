@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace AudioProcessing.Domain;
+namespace AudioProcessing.Domain.Exceptions;
 
 public class HttpErrorException(string ErrorMessage, HttpStatusCode HttpStatusCode) : Exception
 {

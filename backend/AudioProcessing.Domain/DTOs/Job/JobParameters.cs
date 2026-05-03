@@ -1,5 +1,4 @@
-﻿
-namespace AudioProcessing.Domain.DTOs.Job;
+﻿namespace AudioProcessing.Domain.DTOs.Job;
 
 public record JobParameters(
 string Genre,

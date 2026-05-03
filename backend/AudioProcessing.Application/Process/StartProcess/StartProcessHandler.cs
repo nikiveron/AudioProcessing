@@ -1,4 +1,4 @@
-﻿using AudioProcessing.Domain;
+﻿using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Domain.Entities.Track;
 using AudioProcessing.Infrastructure.Database.Repositories;
@@ -34,16 +34,16 @@ public class StartProcessHandler(
 
         var message = JsonSerializer.Serialize(new
         {
-            jobId = job.JobId,
-            inputKey = job.InputKey,
-            outputKey = job.OutputKey,
-            parameters = new { genre = request.Genre, instrument = request.Instrument }
+            job.JobId,
+            job.InputKey,
+            job.OutputKey,
+            Parameters = new { request.Genre, request.Instrument }
         });
 
         await producer.ProduceAsync(request.OutputTopic, new Message<Null, string> { Value = message }, cancellationToken);
         producer.Flush(TimeSpan.FromSeconds(5));
 
-        logger.LogInformation("ProcessController создано сообщение в топик {topic} для TrackId {id}", request.OutputTopic, request.TrackId);
+        logger.LogInformation("ProcessController создано сообщение в топик {topic} для TrackId {trackId} с JobId {jobId}", request.OutputTopic, request.TrackId, job.JobId);
         return job.JobId;
     }
 }

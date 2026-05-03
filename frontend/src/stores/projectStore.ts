@@ -115,12 +115,12 @@ export const useProjectStore = defineStore('project', () => {
         }
     }
 
-    function setTrackError(projectId: string, trackId: string, error: string) {
+    function setTrackError(projectId: string, message: any) {
         const project = projects.value.find((p) => p.id === projectId)
         if (project) {
-            const track = project.rawTracks.find((t) => t.id === trackId)
+            const track = project.rawTracks.find((t) => t.id === processingTrackId.value)
             if (track) {
-                track.error = error
+                track.error = message.error
                 track.isProcessing = false
             }
         }

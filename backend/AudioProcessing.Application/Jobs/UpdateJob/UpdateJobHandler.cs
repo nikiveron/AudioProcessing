@@ -1,4 +1,4 @@
-﻿using AudioProcessing.Domain;
+﻿using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using MediatR;

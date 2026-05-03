@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace AudioProcessing.Worker.Services;
 
-public class KafkaPublisher : IKafkaPublisher
+public class KafkaPublisher : IKafkaPublisher, IDisposable
 {
     private readonly IProducer<Null, string> _producer;
 
@@ -29,5 +29,19 @@ public class KafkaPublisher : IKafkaPublisher
             KafkaTopics.JobPrepared,
             new Message<Null, string> { Value = json },
             ct);
+    }
+
+    public Task ProduceFailed(JobStatusEvent evt, CancellationToken ct)
+    {
+        var json = JsonSerializer.Serialize(evt);
+        return _producer.ProduceAsync(
+            KafkaTopics.JobFailed,
+            new Message<Null, string> { Value = json },
+            ct);
+    }
+
+    public void Dispose()
+    {
+        _producer?.Dispose();
     }
 }

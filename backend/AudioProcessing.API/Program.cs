@@ -1,4 +1,6 @@
+using AudioProcessing.API.Middleware;
 using AudioProcessing.API.Services;
+using AudioProcessing.API.Services.Interfaces;
 using AudioProcessing.Application;
 using AudioProcessing.Infrastructure.Database.Context;
 using AudioProcessing.Infrastructure.Database.Repositories;
@@ -11,6 +13,7 @@ using Scalar.AspNetCore;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -19,7 +22,7 @@ builder.Logging.AddDebug();
 var configuration = builder.Configuration;
 
 // --- Привязка настроек Minio (Options pattern)
-builder.Services.Configure<MinioSettings>(configuration.GetSection("Minio"));
+services.Configure<MinioSettings>(configuration.GetSection("Minio"));
 
 // --- DB: ожидаем ConnectionStrings
 var pgConn = configuration.GetConnectionString("Postgres");
@@ -30,12 +33,12 @@ if (string.IsNullOrWhiteSpace(pgConn))
 }
 
 // DbContext: если connection string пуст — UseNpgsql всё равно вызовет ошибку при миграции/подключении
-builder.Services.AddDbContext<AppDbContext>(opts =>
+services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(pgConn ?? throw new InvalidOperationException("ConnectionStrings:Postgres is missing"),
         b => b.MigrationsAssembly("AudioProcessing.Infrastructure")));
 
-builder.Services.AddScoped<JobsRepository>();
-builder.Services.AddScoped<TracksRepository>();
+services.AddScoped<JobsRepository>();
+services.AddScoped<TracksRepository>();
 
 // Kafka producer — читаем key "Kafka:BootstrapServers"
 var kafkaBootstrap = configuration["Kafka:BootstrapServers"];
@@ -44,10 +47,10 @@ if (string.IsNullOrWhiteSpace(kafkaBootstrap))
     Console.WriteLine("WARNING: Kafka:BootstrapServers is empty. Producer won't be able to send messages.");
 }
 var producerConfig = new ProducerConfig { BootstrapServers = kafkaBootstrap };
-builder.Services.AddSingleton(sp => new ProducerBuilder<Null, string>(producerConfig).Build());
+services.AddSingleton(sp => new ProducerBuilder<Null, string>(producerConfig).Build());
 
 // Регистрация Minio IMinioClient фабрично (чтобы валидировать конфигурацию в одном месте)
-builder.Services.AddSingleton(sp =>
+services.AddSingleton(sp =>
 {
     var minioSettings = sp.GetRequiredService<IOptions<MinioSettings>>().Value;
     if (string.IsNullOrWhiteSpace(minioSettings.Endpoint))
@@ -63,11 +66,14 @@ builder.Services.AddSingleton(sp =>
     return client;
 });
 
-builder.Services.AddHostedService<JobStatusConsumer>();
-// MinioService должен получать IMinioClient и настройки
-builder.Services.AddSingleton<MinioService>();
+services.AddScoped<IJobStatusService, JobStatusService>();
+services.AddScoped<IJobNotifier, SignalRJobNotifier>();
 
-builder.Services.AddCors(options =>
+services.AddHostedService<JobStatusConsumer>();
+// MinioService должен получать IMinioClient и настройки
+services.AddSingleton<MinioService>();
+
+services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
@@ -78,21 +84,26 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSignalR();
+services.AddSignalR();
 
-builder.Services.AddMediatR(cfg => 
+services.AddMediatR(cfg => 
 {
     cfg.RegisterServicesFromAssembly(typeof(AssemblyMarker).Assembly);
 });
 
 // Hosted services, healthchecks, etc.
-builder.Services.AddHealthChecks();
+services.AddHealthChecks();
 
 // Add services to the container.
-builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+services.AddOpenApi();
+services.AddControllers();
+
+services.AddExceptionHandler<ExceptionHandler>();
+services.AddProblemDetails();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Выполнять миграцию и bucket-инициализацию безопасно: оборачиваем в try/catch
 using (var scope = app.Services.CreateScope())

@@ -2,25 +2,27 @@ using AudioProcessing.Infrastructure.Database.Context;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Infrastructure.Storage;
 using AudioProcessing.Worker.Services;
+using AudioProcessing.Worker.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Minio;
 
 var builder = Host.CreateApplicationBuilder(args);
+var services = builder.Services;
 
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? builder.Configuration["ConnectionStrings:Postgres"]
     ?? builder.Configuration["ConnectionStrings__Postgres"];
 
-builder.Services.AddDbContext<AppDbContext>(opts =>
+services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(connectionString ?? throw new InvalidOperationException("ConnectionStrings:Postgres is missing"),
         b => b.MigrationsAssembly("AudioProcessing.Infrastructure")));
 
-builder.Services.AddScoped<JobsRepository>();
+services.AddScoped<JobsRepository>();
 
-builder.Services.Configure<MinioSettings>(builder.Configuration.GetSection("Minio"));
+services.Configure<MinioSettings>(builder.Configuration.GetSection("Minio"));
 
-builder.Services.AddSingleton(sp =>
+services.AddSingleton(sp =>
 {
     var settings = sp.GetRequiredService<IOptions<MinioSettings>>().Value;
 
@@ -36,10 +38,12 @@ builder.Services.AddSingleton(sp =>
     return client.Build();
 });
 
-builder.Services.AddSingleton<MinioService>();
-builder.Services
+services.AddSingleton<MinioService>();
 
-builder.Services.AddHostedService<JobConsumerService>();
+services.AddScoped<IJobPreparationService, JobPreparationService>();
+services.AddSingleton<IKafkaPublisher, KafkaPublisher>();
+
+services.AddHostedService<JobConsumerService>();
 
 var host = builder.Build();
 host.Run();

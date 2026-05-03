@@ -1,6 +1,6 @@
 ﻿using AudioProcessing.Domain.Entities.Job;
 
-namespace AudioProcessing.Domain.DTOs.JobsController;
+namespace AudioProcessing.Domain.Requests.JobsController;
 
 public class UpdateJobRequest
 {

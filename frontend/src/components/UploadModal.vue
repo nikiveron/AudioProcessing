@@ -1,12 +1,15 @@
 ﻿<script setup lang="ts">
-    import { ref } from 'vue'
+    import { ref, onMounted } from 'vue'
     import { useProjectStore } from '../stores/projectStore'
+    import { useInstrumentStore } from '../stores/instrumentStore'
     import { uploadTrack, createTrack, startProcess } from '../api'
     import { connection, ensureSignalRStarted } from '../signalr'
 
     const projectStore = useProjectStore()
+    const instrumentStore = useInstrumentStore()
+
     const file = ref<File | null>(null)
-    const instrument = ref('Guitar')
+    const selectedInstrumentKey = ref<string>('') 
     const loading = ref(false)
     const errorMessage = ref('')
     const fileError = ref('')
@@ -14,6 +17,15 @@
 
     const SUPPORTED_TYPES = ['audio/mpeg', 'audio/wav', 'audio/x-wav']
     const SUPPORTED_EXTENSIONS = ['.mp3', '.wav']
+
+    onMounted(async () => {
+        await instrumentStore.loadInstruments()
+
+        const options = instrumentStore.getOptions()
+        if (options.length > 0 && !selectedInstrumentKey.value) {
+            selectedInstrumentKey.value = options[0].value
+        }
+    })
 
     function selectFile() {
         fileInput.value?.click()
@@ -79,7 +91,7 @@
             const newTrack = {
                 id: `track_${Date.now()}`,
                 filename: file.value.name,
-                instrument: instrument.value as 'Guitar' | 'Piano' | 'Vocal',
+                instrument: selectedInstrumentKey.value,
                 startTime: 0,
                 inputKey: uploadResult.inputKey,
                 outputKey: uploadResult.outputKey,
@@ -91,13 +103,13 @@
             projectStore.addRawTrack(projectStore.activeProjectId, newTrack)
             projectStore.openProcessingModal(newTrack.id)
 
-            // 5. Map enum to numbers
-            const instrumentEnumMap: Record<string, number> = { Guitar: 0, Piano: 1, Vocal: 2 }
+            console.log(`Информация о треке: ${newTrack}`)
+            console.log(`selectedInstrumentKey.value: ${selectedInstrumentKey.value}`)
 
-            // 6. Start processing
+            // 5. Start processing
             const processResult = await startProcess({
                 trackId: track.trackId,
-                instrument: instrumentEnumMap[instrument.value],
+                instrument: selectedInstrumentKey.value,
             })
 
             console.log('Процесс запущен:', processResult)
@@ -152,11 +164,16 @@
 
                 <div class="form-group">
                     <label>Инструмент</label>
-                    <select v-model="instrument" class="select-input">
-                        <option value="Guitar">Guitar</option>
-                        <option value="Piano">Piano</option>
-                        <option value="Vocal">Vocal</option>
+                    <select v-model="selectedInstrumentKey" class="select-input">
+                        <option v-for="option in instrumentStore.getOptions()"
+                                :key="option.value"
+                                :value="option.value">
+                            {{ option.label }}
+                        </option>
                     </select>
+                    <div v-if="instrumentStore.isLoading" class="loading-text">
+                        Загрузка инструментов...
+                    </div>
                 </div>
 
                 <div v-if="errorMessage" class="error-message">
@@ -258,7 +275,7 @@
 
     .file-input-btn {
         width: 100%;
-        padding: 10px;
+        padding: 12px 12px 12px 16px;
         padding-right: 20px;
         background-color: #ada0bc;
         border: none;

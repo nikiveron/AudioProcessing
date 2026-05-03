@@ -1,6 +1,6 @@
 ﻿using AudioProcessing.Application.Tracks.CreateTrack;
 using AudioProcessing.Application.Tracks.GetTrackById;
-using AudioProcessing.Domain.DTOs.TracksController;
+using AudioProcessing.Domain.Requests.TracksController;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

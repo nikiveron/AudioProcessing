@@ -6,7 +6,7 @@ import { saveAs } from 'file-saver'
 export interface Track {
     id: string
     filename: string
-    instrument: 'Guitar' | 'Piano' | 'Vocal'
+    instrument: string
     duration: number
     startTime: number
     endTime: number

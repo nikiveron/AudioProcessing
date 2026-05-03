@@ -188,20 +188,7 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
       - audio_net
-
-
-  redis:
-    image: redis:7
-    container_name: audio_redis
-    restart: always
-    ports:
-      - "6379:6379"
-    networks:
-      - audio_net
-    volumes:
-      - redis_data:/data
-
-
+      
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: audio_pgadmin

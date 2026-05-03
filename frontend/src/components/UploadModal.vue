@@ -7,7 +7,6 @@
     const projectStore = useProjectStore()
     const file = ref<File | null>(null)
     const instrument = ref('Guitar')
-    const genre = ref('Classic')
     const loading = ref(false)
     const errorMessage = ref('')
     const fileError = ref('')
@@ -81,7 +80,6 @@
                 id: `track_${Date.now()}`,
                 filename: file.value.name,
                 instrument: instrument.value as 'Guitar' | 'Piano' | 'Vocal',
-                genre: genre.value as 'Classic' | 'Jazz' | 'Rock',
                 startTime: 0,
                 inputKey: uploadResult.inputKey,
                 outputKey: uploadResult.outputKey,
@@ -94,13 +92,11 @@
             projectStore.openProcessingModal(newTrack.id)
 
             // 5. Map enum to numbers
-            const genreEnumMap: Record<string, number> = { Classic: 0, Jazz: 1, Rock: 2 }
             const instrumentEnumMap: Record<string, number> = { Guitar: 0, Piano: 1, Vocal: 2 }
 
             // 6. Start processing
             const processResult = await startProcess({
                 trackId: track.trackId,
-                genre: genreEnumMap[genre.value],
                 instrument: instrumentEnumMap[instrument.value],
             })
 
@@ -160,15 +156,6 @@
                         <option value="Guitar">Guitar</option>
                         <option value="Piano">Piano</option>
                         <option value="Vocal">Vocal</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Жанр</label>
-                    <select v-model="genre" class="select-input">
-                        <option value="Classic">Classic</option>
-                        <option value="Jazz">Jazz</option>
-                        <option value="Rock">Rock</option>
                     </select>
                 </div>
 

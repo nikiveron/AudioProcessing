@@ -27,9 +27,7 @@ public class JobPreparationService(
             evt.JobId,
             evt.InputKey,
             evt.OutputKey,
-            new JobParameters(
-            evt.Parameters.Genre,
-            evt.Parameters.Instrument)
+            new JobParameters(evt.Parameters.Instrument)
         );
 
         await publisher.ProducePrepared(prepared, ct);

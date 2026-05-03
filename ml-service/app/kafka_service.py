@@ -33,13 +33,13 @@ def publish_result(job_id: str, output_key: str, success: bool, error_msg: str =
     topic = OUTPUT_TOPIC_OK if success else OUTPUT_TOPIC_FAIL
     
     message = {
-        "jobId": job_id,
+        "JobId": job_id,
     }
     
     if success:
-        message["outputKey"] = output_key
+        message["OutputKey"] = output_key
     else:
-        message["error"] = error_msg
+        message["Error"] = error_msg
     
     producer.produce(
         topic,
@@ -52,9 +52,9 @@ def update_backend_job(job_id: str, status: str, output_key: str = None, error_m
     try:
         payload = {"status": status}
         if output_key:
-            payload["outputKey"] = output_key
+            payload["OutputKey"] = output_key
         if error_msg:
-            payload["errorMessage"] = error_msg
+            payload["ErrorMessage"] = error_msg
         
         requests.put(
             f"{BACKEND_URL}/{job_id}",
@@ -77,24 +77,22 @@ INSTRUMENT_MAP = {
 
 def process_job(message):
     data = json.loads(message.value().decode())
-    job_id = data["jobId"]
-    input_key = data["inputKey"]
-    output_key = data["outputKey"]  # Используем outputKey из сообщения
+    job_id = data["JobId"]
+    input_key = data["InputKey"]
+    output_key = data["OutputKey"]  # Используем outputKey из сообщения
     
-    # Получаем instrument и genre из parameters
+    # Получаем instrument из parameters
     parameters = data.get("parameters", {})
     raw_instrument = parameters.get("instrument", 1)
     
     # Маппим enum в строку
     instrument_id = INSTRUMENT_MAP.get(raw_instrument, "keys")
-    genre_id = parameters.get("genre", "default")
     
     # Определяем формат выходного файла по входному
     output_ext = input_key.rsplit(".", 1)[-1] if "." in input_key else "wav"
     
     try:
         print(f"[Job] Processing job {job_id}")
-        print(f"  Instrument: {instrument_id}, Genre: {genre_id}")
         print(f"  Input: {input_key}")
         print(f"  Output: {output_key}")
         

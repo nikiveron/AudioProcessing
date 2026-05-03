@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace AudioProcessing.Application.Process.StartProcess;
 
-public record StartProcessCommand(Guid TrackId, string Genre, string Instrument, string OutputTopic) : IRequest<Guid>;
+public record StartProcessCommand(Guid TrackId, string Instrument, string OutputTopic) : IRequest<Guid>;
 
 public class StartProcessHandler(
     ILogger<StartProcessHandler> logger,
@@ -37,7 +37,7 @@ public class StartProcessHandler(
             job.JobId,
             job.InputKey,
             job.OutputKey,
-            Parameters = new { request.Genre, request.Instrument }
+            Parameters = new { request.Instrument }
         });
 
         await producer.ProduceAsync(request.OutputTopic, new Message<Null, string> { Value = message }, cancellationToken);

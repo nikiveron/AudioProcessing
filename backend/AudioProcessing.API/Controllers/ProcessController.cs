@@ -17,14 +17,14 @@ public class ProcessController(IMediator mediator) : Controller
     private readonly string _outputTopic = KafkaTopics.JobCreated;
 
     /// <summary>
-    /// Принимает параметры (fileKey, genre, instrument), создаёт запись Job в БД и публикует сообщение в Kafka
+    /// Принимает параметры (fileKey, instrument), создаёт запись Job в БД и публикует сообщение в Kafka
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> StartProcess([FromBody] ProcessRequestDto req, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new StartProcessCommand(req.TrackId, req.Genre.ToString(), req.Instrument.ToString(), _outputTopic), cancellationToken));
+        return Ok(await mediator.Send(new StartProcessCommand(req.TrackId, req.Instrument.ToString(), _outputTopic), cancellationToken));
     }
 }
 

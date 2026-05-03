@@ -1,4 +1,4 @@
-﻿namespace AudioProcessing.Domain.DTOs.FileUpload;
+﻿namespace AudioProcessing.Domain.Requests.FileUpload;
 
 public class FileUploadRequest
 {

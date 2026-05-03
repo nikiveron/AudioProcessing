@@ -1,9 +1,8 @@
 ﻿using AudioProcessing.Application.Process.StartProcess;
 using AudioProcessing.Domain;
-using AudioProcessing.Domain.DTOs.Process;
+using AudioProcessing.Domain.Requests.Process;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-
 namespace AudioProcessing.API.Controllers;
 
 /// <summary>
@@ -24,7 +23,6 @@ public class ProcessController(IMediator mediator) : Controller
     [HttpPost]
     public async Task<IActionResult> StartProcess([FromBody] ProcessRequestDto req, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new StartProcessCommand(req.TrackId, req.Instrument.ToString(), _outputTopic), cancellationToken));
+        return Ok(await mediator.Send(new StartProcessCommand(req.TrackId, req.Instrument, _outputTopic), cancellationToken));
     }
 }
-

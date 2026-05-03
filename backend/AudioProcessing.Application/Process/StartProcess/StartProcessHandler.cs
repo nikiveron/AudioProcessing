@@ -7,10 +7,11 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using AudioProcessing.Domain;
 
 namespace AudioProcessing.Application.Process.StartProcess;
 
-public record StartProcessCommand(Guid TrackId, string Instrument, string OutputTopic) : IRequest<Guid>;
+public record StartProcessCommand(Guid TrackId, string? Instrument, string OutputTopic) : IRequest<Guid>;
 
 public class StartProcessHandler(
     ILogger<StartProcessHandler> logger,
@@ -21,6 +22,11 @@ public class StartProcessHandler(
 {
     public async Task<Guid> Handle(StartProcessCommand request, CancellationToken cancellationToken)
     {
+        var instrument = request.Instrument;
+        var allowedTypes = Enum.GetNames<MusicInstrument>();
+        if (string.IsNullOrEmpty(instrument) && !allowedTypes.Contains(instrument))
+            throw new HttpErrorException("Ошибка! Передано некорректное название инструмента. Попробуйте другой инструмент", HttpStatusCode.BadRequest);
+
         logger.LogInformation("ProcessController поступил POST запрос для TrackId {id}", request.TrackId);
         TrackEntity? track = await tracksRepository.Read(request.TrackId, cancellationToken);
         if (track == null)

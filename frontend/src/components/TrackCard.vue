@@ -25,15 +25,6 @@
     const duration = ref(0)
     let objectUrl: string | null = null
 
-    function getInstrumentIcon(instrument: string) {
-        const icons: Record<string, string> = {
-            'Guitar': 'guitar',
-            'Piano': 'piano',
-            'Vocal': 'microphone',
-        }
-        return icons[instrument] || 'note'
-    }
-
     function audioUrl() {
         const t = props.track as Track & { inputKey?: string; outputKey?: string }
         if (props.type === 'processed') return `http://localhost:5000/api/files/download?objectKey=${encodeURIComponent(t.outputKey)}`
@@ -218,7 +209,7 @@
 
 <template>
     <div class="track-card">
-            <Icon :name="getInstrumentIcon(track.instrument)" size="100" :alt="track.instrument" class="track-icon"/>
+            <Icon :name="track.instrument" size="100" :alt="track.instrument" class="track-icon"/>
             <div class="track-content">
                 <div class="track-header">
                     <div class="track-info">

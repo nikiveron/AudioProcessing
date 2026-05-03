@@ -15,9 +15,6 @@
         folder: 'icon-folder.png',
         note: 'icon-note.png',
         notes: 'icon-notes.png',
-        guitar: 'icon-guitar.png',
-        piano: 'icon-piano.png',
-        microphone: 'icon-microphone.png',
         'volume-mute': 'icon-mute.png',
         'volume-up': 'icon-volume.png',
         play: 'icon-play.png',
@@ -31,6 +28,17 @@
         headphones: 'icon-headphones.png',
         help: 'icon-help.png',
         mix: 'icon-mix.png',
+        AcousticGuitar: 'icon-acousticGuitar.png',
+        ElectroGuitar: 'icon-electroGuitar.png',
+        Bass: 'icon-bass.png',
+        Piano: 'icon-piano.png',
+        VocalFemale: 'icon-vocal.png',
+        VocalMale: 'icon-vocal.png',
+        Kick: 'icon-kick.png',
+        Snare: 'icon-snare.png',
+        Tom: 'icon-tom.png',
+        AltTom: 'icon-tom.png',
+        Overhead: 'icon-overhead.png',
     }
 
     const iconPath = () => {

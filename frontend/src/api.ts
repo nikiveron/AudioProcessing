@@ -105,3 +105,31 @@ export async function startProcess(data: any) {
         throw new Error("Неожиданная ошибка во время загрузки трека")
     }
 }
+
+export async function getInstruments(): Promise<Record<string, string>> {
+    try {
+        const res = await api.get("/common/instruments")
+        return res.data
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const serverError = error as AxiosError<ApiError>
+
+            if (serverError.response) {
+                const errors = serverError.response.data as ApiError[]
+                const firstError = errors?.[0]
+
+                const message =
+                    firstError?.errorMessage
+                        ? `Ошибка сервера (${firstError.key}): ${firstError.errorMessage}`
+                        : "Ошибка сервера"
+
+                throw new Error(message)
+            }
+
+            if (serverError.request) {
+                throw new Error("Сервер не отвечает")
+            }
+        }
+        throw new Error("Неожиданная ошибка при загрузке инструментов")
+    }
+}

@@ -1,8 +1,8 @@
-using AudioProcessing.Domain.DTOs.JobsController;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using AudioProcessing.Application.Jobs.GetJobStatus;
 using AudioProcessing.Application.Jobs.UpdateJob;
+using AudioProcessing.Domain.Requests.JobsController;
 
 namespace AudioProcessing.API.Controllers;
 

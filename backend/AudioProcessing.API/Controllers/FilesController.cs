@@ -1,9 +1,9 @@
-using AudioProcessing.Domain.DTOs.FileUpload;
 using AudioProcessing.Application.Files.CreatePresignedUrl;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using AudioProcessing.Application.Files.UploadFile;
 using AudioProcessing.Application.Files.DownloadFile;
+using AudioProcessing.Domain.Requests.FileUpload;
 
 namespace AudioProcessing.API.Controllers;
 

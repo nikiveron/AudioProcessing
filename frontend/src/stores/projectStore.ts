@@ -7,7 +7,6 @@ export interface Track {
     id: string
     filename: string
     instrument: 'Guitar' | 'Piano' | 'Vocal'
-    genre: 'Classic' | 'Jazz' | 'Rock'
     duration: number
     startTime: number
     endTime: number

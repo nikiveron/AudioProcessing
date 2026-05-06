@@ -1,4 +1,4 @@
-﻿namespace AudioProcessing.Infrastructure.Storage;
+﻿namespace AudioProcessing.Domain.Settings;
 
 public class MinioSettings
 {

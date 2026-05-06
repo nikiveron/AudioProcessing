@@ -1,0 +1,39 @@
+@startuml
+title Sonara — обработка аудиосигнала (упрощённая схема)
+
+actor "Пользователь" as User
+
+participant "Веб-приложение\n(Vue 3)" as Frontend
+participant "Backend\n(.NET Web API)" as Backend
+participant "Сервис обработки\n(Worker + ML модель)" as Worker
+database "Хранилище файлов" as Storage
+
+== 1. Загрузка файла ==
+
+User -> Frontend: Выбор аудиофайла
+Frontend -> Backend: Отправка файла
+Backend -> Storage: Сохранение исходного аудио
+Storage --> Backend: Подтверждение
+Backend --> Frontend: ID трека
+
+== 2. Запуск обработки ==
+
+User -> Frontend: Запуск обработки
+Frontend -> Backend: Запрос обработки (trackId)
+Backend -> Worker: Передача задачи обработки
+
+== 3. Обработка аудио ==
+
+Worker -> Storage: Загрузка исходного файла
+Worker -> Worker: Обработка нейросетью (GRU / UNet)
+Worker -> Storage: Сохранение результата
+
+== 4. Получение результата ==
+
+Backend -> Frontend: Уведомление о готовности
+Frontend -> User: Отображение результата
+User -> Frontend: Прослушивание аудио
+Frontend -> Storage: Запрос обработанного файла
+Storage --> Frontend: Аудио результат
+
+@enduml

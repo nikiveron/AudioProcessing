@@ -1,0 +1,81 @@
+@startuml
+title Взаимодействие микросервисов платформы Sonara
+
+actor "Пользователь (Frontend Vue 3)" as User
+
+participant "Frontend\n(Vue 3 + TypeScript)" as Frontend
+participant "Backend\n(ASP.NET Core 8 Web API)" as Backend
+participant "Worker\n(.NET 9 Background Service)" as Worker
+participant "ML Service\n(FastAPI + PyTorch)" as ML
+
+queue "Kafka\n(job.created)" as KafkaCreated
+queue "Kafka\n(job.prepared)" as KafkaPrepared
+queue "Kafka\n(job.completed / job.failed)" as KafkaStatus
+
+database "PostgreSQL\n(метаданные)" as PostgreSQL
+database "MinIO\n(файловое хранилище)" as MinIO
+
+== Этап 1: Загрузка аудиофайла ==
+
+User -> Frontend: Выбор файла\nчерез веб-интерфейс
+Frontend -> Backend: POST /api/files/presigned-upload\n(запрос presigned URL)
+Backend -> Backend: Генерация presigned URL\nдля MinIO
+Backend --> Frontend: presigned URL
+Frontend -> MinIO: PUT загрузка файла\nпо presigned URL
+MinIO --> Frontend: 200 OK
+Frontend -> Backend: POST /api/tracks\n(создание записи трека в БД)
+Backend -> PostgreSQL: INSERT Track\n(inputKey, outputKey, filename)
+PostgreSQL --> Backend: TrackId
+Backend --> Frontend: { trackId, inputKey, outputKey }
+
+== Этап 2: Инициация обработки ==
+
+User -> Frontend: Выбор инструмента\nи запуск обработки
+Frontend -> Backend: POST /api/process\n{ trackId, instrument }
+Backend -> PostgreSQL: INSERT Job\n(status = Queued)
+Backend -> KafkaCreated: Публикация job.created\n{ JobId, InputKey, OutputKey, Parameters }
+
+== Этап 3: Обработка Worker-сервисом ==
+
+KafkaCreated -> Worker: job.created
+Worker -> PostgreSQL: SELECT Job\n(проверка существования)
+PostgreSQL --> Worker: JobEntity
+Worker -> Worker: Обновление статуса\n(status = Running)
+Worker -> PostgreSQL: UPDATE Job
+Worker -> KafkaPrepared: Публикация job.prepared\n{ JobId, InputKey, OutputKey, instrument }
+
+== Этап 4: ML-обработка ==
+
+KafkaPrepared -> ML: job.prepared
+ML -> MinIO: GET загрузка файла\nпо InputKey
+MinIO --> ML: Аудиофайл (bytes)
+ML -> ML: Загрузка модели\nчерез ModelManager
+ML -> ML: Inference\n(UNet нейросеть)
+ML -> MinIO: PUT сохранение результата\nпо OutputKey
+MinIO --> ML: 200 OK
+ML -> KafkaStatus: Публикация job.completed\n{ JobId, OutputKey }
+
+== Этап 5: Завершение и уведомление ==
+
+KafkaStatus -> Backend: job.completed / job.failed
+Backend -> PostgreSQL: UPDATE Job\n(status = Success/Failed, finishedAt)
+PostgreSQL --> Backend: OK
+Backend -> Backend: SignalR Hub\nотправка уведомления
+Backend --> Frontend: SignalR WebSocket\nJobFinished / JobFailed
+Frontend -> Frontend: Обновление UI\nперемещение в обработанные
+User -> Frontend: Прослушивание\nрезультата
+Frontend -> Backend: GET /api/files/download\n?objectKey=OutputKey
+Backend -> MinIO: GET файл
+MinIO --> Backend: Аудиопоток
+Backend --> Frontend: Audio stream
+Frontend -> User: Воспроизведение\nв плеере
+
+note right
+  Отказоустойчивость:
+  - При ошибке ML публикует job.failed
+  - Backend сохраняет errorDescription
+  - SignalR отправляет JobFailed
+  - Пользователь видит ошибку
+end note
+
+@enduml

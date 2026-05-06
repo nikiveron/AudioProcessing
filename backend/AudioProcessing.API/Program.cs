@@ -1,16 +1,8 @@
+using AudioProcessing.API.Extensions;
 using AudioProcessing.API.Middleware;
 using AudioProcessing.API.Services;
-using AudioProcessing.API.Services.Interfaces;
 using AudioProcessing.Application;
-using AudioProcessing.Infrastructure.Database.Context;
-using AudioProcessing.Infrastructure.Database.Repositories;
-using AudioProcessing.Infrastructure.Storage;
-using Confluent.Kafka;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Minio;
 using Scalar.AspNetCore;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -19,84 +11,15 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
-var configuration = builder.Configuration;
-
-// --- Привязка настроек Minio (Options pattern)
-services.Configure<MinioSettings>(configuration.GetSection("Minio"));
-
-// --- DB: ожидаем ConnectionStrings
-var pgConn = configuration.GetConnectionString("Postgres");
-if (string.IsNullOrWhiteSpace(pgConn))
-{
-    // информативная ошибка, чтобы понять проблему сразу
-    Console.WriteLine("ERROR: ConnectionStrings:Postgres is not set. Check your .env or configuration.");
-}
-
-// DbContext: если connection string пуст — UseNpgsql всё равно вызовет ошибку при миграции/подключении
-services.AddDbContext<AppDbContext>(opts =>
-    opts.UseNpgsql(pgConn ?? throw new InvalidOperationException("ConnectionStrings:Postgres is missing"),
-        b => b.MigrationsAssembly("AudioProcessing.Infrastructure")));
-
-services.AddScoped<JobsRepository>();
-services.AddScoped<TracksRepository>();
-
-// Kafka producer — читаем key "Kafka:BootstrapServers"
-var kafkaBootstrap = configuration["Kafka:BootstrapServers"];
-if (string.IsNullOrWhiteSpace(kafkaBootstrap))
-{
-    Console.WriteLine("WARNING: Kafka:BootstrapServers is empty. Producer won't be able to send messages.");
-}
-var producerConfig = new ProducerConfig { BootstrapServers = kafkaBootstrap };
-services.AddSingleton(sp => new ProducerBuilder<Null, string>(producerConfig).Build());
-
-// Регистрация Minio IMinioClient фабрично (чтобы валидировать конфигурацию в одном месте)
-services.AddSingleton(sp =>
-{
-    var minioSettings = sp.GetRequiredService<IOptions<MinioSettings>>().Value;
-    if (string.IsNullOrWhiteSpace(minioSettings.Endpoint))
-        throw new InvalidOperationException("Minio:Endpoint is not configured. Set Minio:Endpoint in environment or appsettings.");
-
-    // Создаём клиент (Minio .NET API)
-    var builderClient = new MinioClient()
-        .WithEndpoint(minioSettings.Endpoint)
-        .WithCredentials(minioSettings.AccessKey, minioSettings.SecretKey);
-
-    // Если указана secure = false, можно попытаться отключить ssl. (MinioClient API не всегда имеет WithSSL; оставим стандартную цепочку)
-    var client = builderClient.Build();
-    return client;
-});
-
-services.AddScoped<IJobStatusService, JobStatusService>();
-services.AddScoped<IJobNotifier, SignalRJobNotifier>();
-
-services.AddHostedService<JobStatusConsumer>();
-// MinioService должен получать IMinioClient и настройки
-services.AddSingleton<MinioService>();
-
-services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000")  // Vue приложение
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();  // нужно для SignalR
-    });
-});
+services.AddApplicationServices(builder.Configuration);
 
 services.AddSignalR();
+services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(AssemblyMarker).Assembly));
 
-services.AddMediatR(cfg => 
-{
-    cfg.RegisterServicesFromAssembly(typeof(AssemblyMarker).Assembly);
-});
-
-// Hosted services, healthchecks, etc.
 services.AddHealthChecks();
-
-// Add services to the container.
-services.AddOpenApi();
 services.AddControllers();
+services.AddOpenApi();
 
 services.AddExceptionHandler<ExceptionHandler>();
 services.AddProblemDetails();
@@ -105,65 +28,20 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-// Выполнять миграцию и bucket-инициализацию безопасно: оборачиваем в try/catch
-using (var scope = app.Services.CreateScope())
-{
-    var sp = scope.ServiceProvider;
-
-    // миграции
-    try
-    {
-        var db = sp.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
-        Debug.WriteLine($"Database migration completed successfully.");
-    }
-    catch (Exception ex)
-    {
-        Debug.WriteLine($"Database migration failed: {ex.Message}");
-        Console.WriteLine($"Database migration failed: {ex.Message}");
-    }
-
-    // Ensure bucket (если Minio доступен)
-    try
-    {
-        var minioService = sp.GetRequiredService<MinioService>();
-        await minioService.EnsureBucketExistsAsync(CancellationToken.None);
-        Debug.WriteLine($"MinIO initialization completed successfully.");
-    }
-    catch (Exception ex)
-    {
-        Debug.WriteLine($"MinIO initialization failed: {ex.Message}");
-        Console.WriteLine($"MinIO initialization failed: {ex.Message}");
-        // не пробрасываем — приложение продолжит работать (но без MinIO функционал будет ограничен)
-    }
-}
+await app.InitializeInfrastructureAsync();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1");
-    });
-
-    app.UseReDoc(options =>
-    {
-        options.SpecUrl("/openapi/v1.json");
-    });
-
+    app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1"));
+    app.UseReDoc(o => o.SpecUrl("/openapi/v1.json"));
     app.MapScalarApiReference();
 }
 
-app.UseCors("AllowFrontend");
-app.UseRouting();
-
-// Для разработки можно временно отключить HttpsRedirect, если не настроены certs в контейнере
-// app.UseHttpsRedirection();
+app.UseCors("CorsPolicy");
 
 app.MapHealthChecks("/api/health");
 app.MapControllers();
-
 app.MapHub<JobHub>("/hubs/jobs");
 
 app.Run();

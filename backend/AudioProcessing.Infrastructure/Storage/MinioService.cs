@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AudioProcessing.Domain.Settings;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;

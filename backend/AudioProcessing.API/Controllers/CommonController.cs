@@ -1,4 +1,4 @@
-﻿using AudioProcessing.Domain;
+﻿using AudioProcessing.Domain.Enums;
 using AudioProcessing.Infrastructure.Tools;
 using Microsoft.AspNetCore.Mvc;
 

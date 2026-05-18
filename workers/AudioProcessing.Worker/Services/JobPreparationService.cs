@@ -1,8 +1,8 @@
 ﻿using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.DTOs.Job;
-using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Worker.Services.Interfaces;
+using AudioProcessing.Domain.Enums;
 
 namespace AudioProcessing.Worker.Services;
 

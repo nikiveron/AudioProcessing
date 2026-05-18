@@ -1,9 +1,7 @@
-using AudioProcessing.Application.Files.CreatePresignedUrl;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using AudioProcessing.Application.Files.UploadFile;
 using AudioProcessing.Application.Files.DownloadFile;
-using AudioProcessing.Domain.Requests.FileUpload;
 
 namespace AudioProcessing.API.Controllers;
 
@@ -15,21 +13,6 @@ namespace AudioProcessing.API.Controllers;
 [Route("api/files")]
 public class FilesController(IMediator mediator) : ControllerBase
 {
-    private const string _inputPath = "input";
-    private const string _outputPath = "output";
-
-    /// <summary>
-    /// Метод выдаёт presigned URL для загрузки в MinIO
-    /// </summary>
-    /// <param name="request">Объект запроса, содержащий имя файла для загрузки</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    /// <returns>Объект <see cref="IActionResult"/>, содержащий presigned URL для загрузки файла</returns>
-    [HttpPost("presigned-upload")]
-    public async Task<IActionResult> GetPresignedUrl([FromBody] FileUploadRequest request, CancellationToken cancellationToken)
-    {
-        return Ok(await mediator.Send(new CreatePresignedUrlCommand(request.Filename, _inputPath, _outputPath), cancellationToken));
-    }
-
     /// <summary>
     /// Обрабатывает запросы на загрузку файла, принимая файл от клиента и инициируя процесс загрузки
     /// асинхронно.

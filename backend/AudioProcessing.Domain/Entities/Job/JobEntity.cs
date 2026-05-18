@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AudioProcessing.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AudioProcessing.Domain.Entities.Job;
@@ -33,13 +34,4 @@ public class JobEntity
 
     [Column("error_description")]
     public string? ErrorDescription { get; set; }
-}
-
-public enum JobStatus
-{
-    Null = -1,
-    Queued,
-    Running,
-    Success,
-    Failed
 }

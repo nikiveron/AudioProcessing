@@ -1,4 +1,4 @@
-﻿using AudioProcessing.Domain.Entities.Job;
+﻿using AudioProcessing.Domain.Enums;
 
 namespace AudioProcessing.Domain.Requests.JobsController;
 

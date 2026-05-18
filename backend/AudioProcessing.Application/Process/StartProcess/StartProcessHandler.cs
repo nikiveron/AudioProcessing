@@ -7,7 +7,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
-using AudioProcessing.Domain;
+using AudioProcessing.Domain.Enums;
 
 namespace AudioProcessing.Application.Process.StartProcess;
 

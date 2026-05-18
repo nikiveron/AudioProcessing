@@ -1,9 +1,9 @@
 ﻿using AudioProcessing.Domain.Exceptions;
-using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using AudioProcessing.Domain.Enums;
 
 namespace AudioProcessing.Application.Jobs.UpdateJob;
 

@@ -30,8 +30,7 @@ public class MinioService
         }
         catch (Exception ex)
         {
-            // логируем, но не пробрасываем дальше — инициализация может быть отложена
-            _logger.LogWarning("Minio EnsureBucketExistsAsync failed: {message}", ex.Message);
+            _logger.LogWarning("Ошибка! Minio EnsureBucketExistsAsync завершился неудачей: {message}", ex.Message);
             throw;
         }
     }

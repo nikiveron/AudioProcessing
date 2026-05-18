@@ -1,6 +1,7 @@
 ﻿using AudioProcessing.API.Services.Interfaces;
 using AudioProcessing.Domain.DTOs.Job;
 using AudioProcessing.Domain.Entities.Job;
+using AudioProcessing.Domain.Enums;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AudioProcessing.API.Services;

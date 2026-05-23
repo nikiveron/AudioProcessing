@@ -16,7 +16,8 @@ public class MinioService
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         var s = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
-        _bucket = string.IsNullOrWhiteSpace(s.Bucket) ? "audio" : s.Bucket;
+        _bucket = !string.IsNullOrWhiteSpace(s.Bucket) ? s.Bucket : 
+            throw new ArgumentNullException(_bucket, "Ошибка! Имя bucket не настроено в конфигурации");
         _logger = logger;
     }
 
@@ -44,7 +45,7 @@ public class MinioService
             .WithObject(objectName)
             .WithStreamData(data)
             .WithObjectSize(data.Length)
-            .WithContentType(contentType), 
+            .WithContentType(contentType),
             ct);
     }
 
@@ -55,26 +56,6 @@ public class MinioService
             .WithCallbackStream((stream) => stream.CopyTo(ms)), cancellationToken);
         ms.Position = 0;
         return ms;
-    }
-
-    public string PresignedGetObject(string objectName, int expirySeconds = 3600)
-    {
-        var args = new PresignedGetObjectArgs()
-            .WithBucket(_bucket)
-            .WithObject(objectName)
-            .WithExpiry(expirySeconds);
-
-        return _client.PresignedGetObjectAsync(args).GetAwaiter().GetResult();
-    }
-
-    public string PresignedPutObject(string objectName, int expirySeconds = 3600)
-    {
-        var args = new PresignedPutObjectArgs()
-            .WithBucket(_bucket)
-            .WithObject(objectName)
-            .WithExpiry(expirySeconds);
-
-        return _client.PresignedPutObjectAsync(args).GetAwaiter().GetResult();
     }
 
     public async Task<bool> ObjectExistsAsync(string objectName, CancellationToken ct)

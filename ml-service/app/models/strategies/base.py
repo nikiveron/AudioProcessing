@@ -1,4 +1,5 @@
 import io
+import logging
 import torch
 import librosa
 import soundfile as sf
@@ -7,6 +8,8 @@ from abc import ABC
 
 from app.models.utils_unet import stft_spectrogram
 from app.models.model_unet_improved import ImprovedUNetSeparator
+
+logger = logging.getLogger(__name__)
 
 
 class BaseProcessingStrategy(ABC):
@@ -51,8 +54,7 @@ class BaseProcessingStrategy(ABC):
         self._model.load_state_dict(torch.load(self.model_path, map_location=self.device))
         self._model.eval()
         
-        print(f"[{self.get_instrument_name()} Model] Загружена модель из {self.model_path}")
-        print(f"  Устройство: {self.device}")
+        logger.info(f"[{self.get_instrument_name()}] Model loaded from {self.model_path} on {self.device}")
         
         return self._model
     

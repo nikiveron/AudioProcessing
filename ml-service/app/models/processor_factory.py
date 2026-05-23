@@ -1,9 +1,12 @@
+import logging
 from typing import Dict, Type
 from app.models.strategies.base import BaseProcessingStrategy
 from app.models.strategies.ag_strategy import AGProcessingStrategy
 from app.models.strategies.eg_strategy import EGProcessingStrategy
 from app.models.strategies.bass_strategy import BassProcessingStrategy
 from app.models.strategies.keys_strategy import KeysProcessingStrategy
+
+logger = logging.getLogger(__name__)
 
 
 class ProcessingStrategyFactory:
@@ -31,7 +34,7 @@ class ProcessingStrategyFactory:
         strategy = strategy_class()
         self._strategies[instrument_id] = strategy
         
-        print(f"[Factory] Создана стратегия для '{instrument_id}': {strategy_class.__name__}")
+        logger.info(f"Created strategy for '{instrument_id}': {strategy_class.__name__}")
         
         return strategy
     

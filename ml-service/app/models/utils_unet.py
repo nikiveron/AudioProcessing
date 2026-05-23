@@ -1,4 +1,5 @@
 import os
+import logging
 import librosa
 import soundfile as sf
 import numpy as np
@@ -8,6 +9,8 @@ import torch.nn.functional as F
 from pathlib import Path
 from torch.utils.data import Dataset
 import io
+
+logger = logging.getLogger(__name__)
 
 # STFT параметры
 N_FFT = 2048
@@ -22,7 +25,7 @@ SPEC_MAX = 1.0
 
 def split_and_save(audio_path, save_dir, segment_duration=15.0, sample_rate=48000):
     os.makedirs(save_dir, exist_ok=True)
-    print(f"Loading {audio_path} ...")
+    logger.info(f"Loading {audio_path} ...")
 
     y, sr = librosa.load(audio_path, sr=sample_rate)
     samples_per_segment = int(sr * segment_duration)
@@ -33,7 +36,7 @@ def split_and_save(audio_path, save_dir, segment_duration=15.0, sample_rate=4800
         sf.write(os.path.join(save_dir, f'segment_{Path(audio_path).stem}_{i:04d}.wav'),
                  segment, sr)
 
-    print(f"Saved {total_segments} segments to {save_dir}")
+    logger.info(f"Saved {total_segments} segments to {save_dir}")
 
 
 def stft_spectrogram(audio, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WIN_LENGTH, window=WINDOW):

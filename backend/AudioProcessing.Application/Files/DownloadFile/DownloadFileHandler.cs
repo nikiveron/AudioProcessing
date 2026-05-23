@@ -28,7 +28,6 @@ public class DownloadFileHandler(
             {
                 ".wav" => "audio/wav",
                 ".mp3" => "audio/mpeg",
-                ".ogg" => "audio/ogg",
                 _ => "application/octet-stream"
             };
 

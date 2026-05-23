@@ -1,6 +1,6 @@
 import os
 
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka-1:9092,kafka-2:9093,kafka-3:9094")
 INPUT_TOPIC = os.getenv("INPUT_TOPIC", "job.prepared")
 OUTPUT_TOPIC_OK = os.getenv("OUTPUT_TOPIC_OK", "job.completed")
 OUTPUT_TOPIC_FAIL = os.getenv("OUTPUT_TOPIC_FAIL", "job.failed")

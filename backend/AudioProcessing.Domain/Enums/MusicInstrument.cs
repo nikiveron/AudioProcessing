@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace AudioProcessing.Domain;
+namespace AudioProcessing.Domain.Enums;
 
 public enum MusicInstrument
 {

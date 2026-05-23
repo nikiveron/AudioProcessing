@@ -2911,8 +2911,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.5.0)
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-<<<<<<< HEAD
 content-hash = "e71ba580aca83b40951e4490d5048444af74f0f3f987f57b3b5683e4aa26853b"
-=======
-content-hash = "df5b59bb3f961d4db6810c2b546796548f9b022135b879766e0acb8f3cbb510f"
->>>>>>> 947caa5 (feat, refactor: add ag and bass models, apply strategy for processing)

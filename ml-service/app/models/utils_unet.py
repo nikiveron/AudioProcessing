@@ -21,7 +21,6 @@ SPEC_MAX = 1.0
 
 
 def split_and_save(audio_path, save_dir, segment_duration=15.0, sample_rate=48000):
-    """Разбивает аудиофайл на сегменты и сохраняет их."""
     os.makedirs(save_dir, exist_ok=True)
     print(f"Loading {audio_path} ...")
 
@@ -38,10 +37,6 @@ def split_and_save(audio_path, save_dir, segment_duration=15.0, sample_rate=4800
 
 
 def stft_spectrogram(audio, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WIN_LENGTH, window=WINDOW):
-    """
-    Преобразование аудио в STFT спектрограмму.
-    Возвращает magnitude и phase для совместимости.
-    """
     D = librosa.stft(
         audio,
         n_fft=n_fft,
@@ -53,8 +48,6 @@ def stft_spectrogram(audio, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WI
     
     magnitude = np.abs(D)
     phase = np.angle(D)
-    
-    # Логарифмическая нормализация
     magnitude_db = librosa.power_to_db(magnitude ** 2, ref=1.0, top_db=80)
     magnitude_norm = (magnitude_db + 80) / 80
     magnitude_norm = np.clip(magnitude_norm, 0, 1)
@@ -63,7 +56,6 @@ def stft_spectrogram(audio, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WI
 
 
 def stft_to_audio(magnitude_norm, phase, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WIN_LENGTH, window=WINDOW):
-    """Восстановление аудио из STFT спектрограммы и фазы."""
     # Денормализация
     magnitude_db = magnitude_norm * 80 - 80
     magnitude = librosa.db_to_power(magnitude_db, ref=1.0) ** 0.5
@@ -84,13 +76,6 @@ def stft_to_audio(magnitude_norm, phase, sr=48000, n_fft=N_FFT, hop_length=HOP, 
 
 
 def complex_stft(audio, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WIN_LENGTH, window=WINDOW):
-    """
-    Complex STFT - возвращает real и imag части.
-    
-    Returns:
-        real: (freq, time)
-        imag: (freq, time)
-    """
     D = librosa.stft(
         audio,
         n_fft=n_fft,
@@ -115,13 +100,6 @@ def complex_stft(audio, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WIN_LE
 
 
 def complex_istft(real, imag, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=WIN_LENGTH, window=WINDOW):
-    """
-    Обратное Complex STFT.
-    
-    Args:
-        real: (freq, time)
-        imag: (freq, time)
-    """
     # Восстанавливаем комплексное число
     D = real + 1j * imag
     
@@ -146,7 +124,6 @@ def complex_istft(real, imag, sr=48000, n_fft=N_FFT, hop_length=HOP, win_length=
 
 
 class AudioEffectDataset(Dataset):
-    """Датасет для обучения на STFT спектрограммах."""
     
     def __init__(self, clean_dir, processed_dir, sample_rate=48000, use_complex=False):
         self.sample_rate = sample_rate
@@ -189,10 +166,6 @@ class AudioEffectDataset(Dataset):
 
 
 class SSIMLoss(nn.Module):
-    """
-    SSIM (Structural Similarity Index) Loss.
-    Сохраняет структуру спектрограммы лучше чем MSE.
-    """
     def __init__(self, window_size=11, size_average=True):
         super().__init__()
         self.window_size = window_size
@@ -212,11 +185,6 @@ class SSIMLoss(nn.Module):
         return _2D_window.expand(channel, 1, window_size, window_size).contiguous()
 
     def forward(self, img1, img2):
-        """
-        Args:
-            img1: (batch, channel, freq, time)
-            img2: (batch, channel, freq, time)
-        """
         window = self.window.to(img1.device)
         mu1 = F.conv2d(img1, window, padding=self.window_size//2, groups=self.channel)
         mu2 = F.conv2d(img2, window, padding=self.window_size//2, groups=self.channel)
@@ -241,7 +209,6 @@ class SSIMLoss(nn.Module):
 
 
 def spectral_loss(output, target, sr=48000, n_fft=N_FFT):
-    """Spectral loss с акцентом на транзиенты."""
     out = output.squeeze(1) if output.dim() == 4 else output
     tgt = target.squeeze(1) if target.dim() == 4 else target
     
@@ -255,10 +222,6 @@ def spectral_loss(output, target, sr=48000, n_fft=N_FFT):
 
 
 def complex_spectral_loss(output, target):
-    """
-    Spectral loss для комплексных значений.
-    output/target: (batch, 2, freq, time) - [real, imag]
-    """
     out_real = output[:, 0, :, :]
     out_imag = output[:, 1, :, :]
     tgt_real = target[:, 0, :, :]
@@ -272,7 +235,6 @@ def complex_spectral_loss(output, target):
 
 
 def process_single_file(model, input_bytes, device, sample_rate=48000, use_complex=False):
-    """Обработка одного аудиофайла моделью."""
     y, sr = librosa.load(io.BytesIO(input_bytes), sr=sample_rate)
 
     if use_complex:

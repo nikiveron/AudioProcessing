@@ -7,25 +7,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
-
 WORKDIR /app
 
-# Copy poetry files first for better caching
-COPY pyproject.toml poetry.lock ./
+COPY requirements.txt .
+RUN pip install \
+    --no-cache-dir \
+    --prefer-binary \
+    --trusted-host pypi.org \
+    --trusted-host files.pythonhosted.org \
+    -r requirements.txt
 
-# Install dependencies (without dev)
-RUN poetry install --only main --no-root --no-interaction
-
-# Copy application code
+# Копируем код приложения
 COPY app ./app
-COPY model_weights_keys_improved_unet.pth ./model_weights_keys_improved_unet.pth
-COPY model_weights_bass_improved_unet.pth ./model_weights_bass_improved_unet.pth
 
-# Expose port
+# Открываем порт
 EXPOSE 8000
 
-# Run with poetry
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Запускаем приложение
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

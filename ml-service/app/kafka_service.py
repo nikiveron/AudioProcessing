@@ -66,12 +66,12 @@ def update_backend_job(job_id: str, status: str, output_key: str = None, error_m
         print(f"[Backend] Error updating job {job_id}: {e}")
 
 
-# Маппинг enum значений инструментов (backend отправляет число: 1=keys, 2=bass)
+# Маппинг enum значений инструментов (backend отправляет enum: Piano, Bass, ElectroGuitar, AcousticGuitar)
 INSTRUMENT_MAP = {
-    1: "keys",
-    2: "bass",
-    "keys": "keys",
-    "bass": "bass"
+    "Piano": "keys",
+    "Bass": "bass",
+    "ElectroGuitar": "eg",
+    "AcousticGuitar": "ag",
 }
 
 
@@ -79,16 +79,11 @@ def process_job(message):
     data = json.loads(message.value().decode())
     job_id = data["JobId"]
     input_key = data["InputKey"]
-    output_key = data["OutputKey"]  # Используем outputKey из сообщения
+    output_key = data["OutputKey"]
     
-    # Получаем instrument из parameters
     parameters = data.get("parameters", {})
     raw_instrument = parameters.get("instrument", 1)
-    
-    # Маппим enum в строку
     instrument_id = INSTRUMENT_MAP.get(raw_instrument, "keys")
-    
-    # Определяем формат выходного файла по входному
     output_ext = input_key.rsplit(".", 1)[-1] if "." in input_key else "wav"
     
     try:
@@ -100,7 +95,6 @@ def process_job(message):
         input_bytes = download_file(input_key)
         print(f"[Download] Downloaded {len(input_bytes)} bytes")
         
-        # Используем ModelManager для выбора обработчика по инструменту
         manager = get_model_manager()
         print(f"[ML] Processing with '{instrument_id}' model")
         result_buf = manager.process_audio(instrument_id, input_bytes, output_format=output_ext.upper())

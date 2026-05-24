@@ -141,7 +141,3 @@ build/
 # *.pth
 # *.pt
 # *.pkl
-
-# # Data
-data/keys_segments/
-# model_weights_keys*.pth

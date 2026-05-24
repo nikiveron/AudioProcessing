@@ -1,0 +1,11 @@
+# существует исключительно для докерфайла
+fastapi==0.104.1
+uvicorn==0.24.0
+torch==2.0.1
+librosa==0.10.2.post1
+soundfile==0.12.1
+numpy==1.24.3
+python-multipart==0.0.6
+confluent-kafka==2.14.0
+minio==7.1.0
+requests==2.31.0

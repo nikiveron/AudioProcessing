@@ -109,42 +109,32 @@ class ImprovedUNetSeparator(nn.Module):
         
         self.input_size = input_size
         self.base_channels = base_channels
-        
-        # LeakyReLU вместо Mish для MPS совместимости
         self.activation = nn.LeakyReLU(0.2, inplace=True)
-        
-        # Входной слой: 1 → base_channels
+
         self.input_conv = nn.Sequential(
             nn.Conv2d(1, base_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(base_channels),
             self.activation
         )
-        
-        # Encoder: 3 уровня
+
         self.encoder1 = self._encoder_block(base_channels, base_channels * 2)   # 32 → 64
         self.encoder2 = self._encoder_block(base_channels * 2, base_channels * 4)  # 64 → 128
         self.encoder3 = self._encoder_block(base_channels * 4, base_channels * 8)  # 128 → 256
-        
-        # Bottleneck: 2 Residual Blocks
+
         self.bottleneck = nn.Sequential(
             ResidualBlock(base_channels * 8, dropout_rate),
             ResidualBlock(base_channels * 8, dropout_rate)
         )
-        
-        # Decoder с Attention Gates
-        # decoder3: 256 → 128, cat с e2(128) = 256
+
         self.attention3 = AttentionGate(F_g=base_channels * 4, F_l=base_channels * 4, F_int=base_channels * 2)
         self.decoder3 = self._decoder_block(base_channels * 8, base_channels * 4)
-        
-        # decoder2: 256 → 64, cat с e1(64) = 128
+
         self.attention2 = AttentionGate(F_g=base_channels * 2, F_l=base_channels * 2, F_int=base_channels)
         self.decoder2 = self._decoder_block(base_channels * 8, base_channels * 2)
-        
-        # decoder1: 128 → 32
+
         self.attention1 = AttentionGate(F_g=base_channels, F_l=base_channels, F_int=base_channels // 2)
         self.decoder1 = self._decoder_block(base_channels * 4, base_channels)
-        
-        # Выходной слой: base_channels → 1
+
         self.output_conv = nn.Sequential(
             nn.Conv2d(base_channels, 1, kernel_size=3, padding=1),
             nn.Sigmoid()
@@ -169,7 +159,6 @@ class ImprovedUNetSeparator(nn.Module):
         )
     
     def _init_weights(self):
-        """Инициализация весов"""
         for m in self.modules():
             if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='leaky_relu')
@@ -180,23 +169,12 @@ class ImprovedUNetSeparator(nn.Module):
                 nn.init.constant_(m.bias, 0)
     
     def forward(self, x):
-        """
-        Forward pass.
-        
-        Args:
-            x: Input tensor (batch, 1, freq, time) - magnitude спектрограмма
-            
-        Returns:
-            output: Magnitude output (batch, 1, freq, time)
-        """
         if x.dim() != 4:
             raise ValueError(f"Expected 4D input tensor (batch, 1, freq, time), got {x.dim()}D")
         
-        # Сохраняем оригинальные размеры
         orig_freq = x.size(2)
         orig_time = x.size(3)
         
-        # Входной слой
         x = self.input_conv(x)
         
         # Encoder с сохранением skip connections (3 уровня)
@@ -240,10 +218,7 @@ class ImprovedUNetSeparator(nn.Module):
 
 
 class ImprovedComplexUNetSeparator(nn.Module):
-    """
-    Улучшенная Complex U-Net архитектура с attention gates.
-    """
-    
+
     def __init__(self, input_size=1025, base_channels=64, dropout_rate=0.2):
         super().__init__()
         

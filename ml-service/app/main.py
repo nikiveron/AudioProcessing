@@ -1,8 +1,11 @@
 from contextlib import asynccontextmanager
 import threading
+import logging
 from fastapi import FastAPI
 from .kafka_service import kafka_consumer_loop
+from .logging_config import setup_logging
 
+logger = logging.getLogger(__name__)
 
 consumer_thread = None
 
@@ -10,12 +13,13 @@ consumer_thread = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global consumer_thread
-    print("[App] Starting Sonara dev")
+    setup_logging()
+    logger.info("Starting Sonara dev")
     consumer_thread = threading.Thread(target=kafka_consumer_loop, daemon=True)
     consumer_thread.start()
-    print("[App] Kafka consumer started")
+    logger.info("Kafka consumer started")
     yield
-    print("[App] Shutting down")
+    logger.info("Shutting down")
 
 
 app = FastAPI(title="Sonara dev", lifespan=lifespan)

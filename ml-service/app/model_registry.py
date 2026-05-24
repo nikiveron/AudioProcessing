@@ -9,22 +9,24 @@ INSTRUMENTS = {
         "processor_fn": "process_audio_file",
         "description": "U-Net модель для обработки бас-гитары"
     },
-    # Шаблон для добавления нового инструмента:
-    # "piano": {
-    #     "module_path": "app.models.piano",
-    #     "processor_fn": "process_audio_file",
-    #     "description": "U-Net модель для обработки пианино"
-    # },
+    "ag": {
+        "module_path": "app.models.ag",
+        "processor_fn": "process_audio_file",
+        "description": "U-Net модель для обработки акустической гитары"
+    },
+    "eg": {
+        "module_path": "app.models.eg",
+        "processor_fn": "process_audio_file",
+        "description": "U-Net модель для обработки электрогитары"
+    },
 }
 
 
 def get_available_instruments():
-    """Возвращает список доступных инструментов."""
     return list(INSTRUMENTS.keys())
 
 
 def get_instrument_info(instrument_id: str):
-    """Получить информацию об инструменте."""
     if instrument_id not in INSTRUMENTS:
         raise ValueError(f"Unknown instrument: {instrument_id}. Available: {get_available_instruments()}")
     return INSTRUMENTS[instrument_id]

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "diploma-ml-service"
 version = "0.1.0"
-description = "ML service for keyboard audio effect processing"
+description = "ML service for audio effect processing (keys, bass, acoustic guitar, electric guitar)"
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
@@ -15,12 +15,10 @@ torch = "^2.0.0"
 librosa = "^0.10.0"
 soundfile = "^0.12.0"
 numpy = "^1.24.0"
-matplotlib = "^3.8.0"
 python-multipart = "^0.0.6"
 confluent-kafka = "^2.0.0"
 minio = "^7.1.0"
 requests = "^2.31.0"
-noise = "^1.2.2"
 ruff = "^0.15.11"
 
 [tool.poetry.group.dev.dependencies]

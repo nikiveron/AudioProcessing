@@ -1,5 +1,6 @@
 import json
 import time
+import logging
 import requests
 from confluent_kafka import Consumer, Producer
 from .config import (
@@ -12,6 +13,8 @@ from .config import (
 )
 from .minio_service import download_file, upload_file
 from .model_manager import get_model_manager
+
+logger = logging.getLogger(__name__)
 
 
 def get_kafka_consumer():
@@ -61,17 +64,17 @@ def update_backend_job(job_id: str, status: str, output_key: str = None, error_m
             json=payload,
             timeout=BACKEND_TIMEOUT
         )
-        print(f"[Backend] Updated job {job_id} with status {status}")
+        logger.info(f"Updated job {job_id} with status {status}")
     except Exception as e:
-        print(f"[Backend] Error updating job {job_id}: {e}")
+        logger.error(f"Error updating job {job_id}: {e}")
 
 
-# Маппинг enum значений инструментов (backend отправляет число: 1=keys, 2=bass)
+# Маппинг enum значений инструментов (backend отправляет enum: Piano, Bass, ElectroGuitar, AcousticGuitar)
 INSTRUMENT_MAP = {
-    1: "keys",
-    2: "bass",
-    "keys": "keys",
-    "bass": "bass"
+    "Piano": "keys",
+    "Bass": "bass",
+    "ElectroGuitar": "eg",
+    "AcousticGuitar": "ag",
 }
 
 
@@ -79,54 +82,44 @@ def process_job(message):
     data = json.loads(message.value().decode())
     job_id = data["JobId"]
     input_key = data["InputKey"]
-    output_key = data["OutputKey"]  # Используем outputKey из сообщения
+    output_key = data["OutputKey"]
     
-    # Получаем instrument из parameters
     parameters = data.get("parameters", {})
     raw_instrument = parameters.get("instrument", 1)
-    
-    # Маппим enum в строку
     instrument_id = INSTRUMENT_MAP.get(raw_instrument, "keys")
-    
-    # Определяем формат выходного файла по входному
     output_ext = input_key.rsplit(".", 1)[-1] if "." in input_key else "wav"
     
     try:
-        print(f"[Job] Processing job {job_id}")
-        print(f"  Input: {input_key}")
-        print(f"  Output: {output_key}")
+        logger.info(f"Processing job {job_id} | Input: {input_key} | Output: {output_key}")
         
-        print(f"[Download] Downloading {input_key}")
+        logger.debug(f"Downloading {input_key}")
         input_bytes = download_file(input_key)
-        print(f"[Download] Downloaded {len(input_bytes)} bytes")
+        logger.debug(f"Downloaded {len(input_bytes)} bytes")
         
-        # Используем ModelManager для выбора обработчика по инструменту
         manager = get_model_manager()
-        print(f"[ML] Processing with '{instrument_id}' model")
+        logger.info(f"Processing with '{instrument_id}' model")
         result_buf = manager.process_audio(instrument_id, input_bytes, output_format=output_ext.upper())
         result_buf.seek(0)
         result_bytes = result_buf.getvalue()
-        print(f"[ML] Processing completed, output size: {len(result_bytes)} bytes")
+        logger.debug(f"Processing completed, output size: {len(result_bytes)} bytes")
         
-        print(f"[Upload] Uploading result to {output_key}")
+        logger.debug(f"Uploading result to {output_key}")
         result_buf.seek(0)
         upload_file(output_key, result_buf, len(result_bytes))
-        print("[Upload] Uploaded successfully")
+        logger.debug("Upload completed")
         
         update_backend_job(job_id, "Completed", output_key=output_key)
         publish_result(job_id, output_key, success=True)
-        print(f"[Success] Job {job_id} completed")
+        logger.info(f"Job {job_id} completed successfully")
         
     except Exception as e:
-        print(f"[Error] Job {job_id} failed: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Job {job_id} failed: {e}", exc_info=True)
         update_backend_job(job_id, "Failed", error_msg=str(e))
         publish_result(job_id, None, success=False, error_msg=str(e))
 
 
 def kafka_consumer_loop():
-    print("[Consumer] Starting...")
+    logger.info("Kafka consumer starting...")
     
     max_retries = 5
     retry_count = 0
@@ -135,16 +128,18 @@ def kafka_consumer_loop():
     while retry_count < max_retries:
         try:
             consumer = get_kafka_consumer()
-            print("[Consumer] Connected to Kafka")
+            logger.info("Connected to Kafka")
             break
         except Exception as e:
             retry_count += 1
-            print(f"[Consumer] Connection attempt {retry_count}/{max_retries} failed: {e}")
+            logger.warning(f"Connection attempt {retry_count}/{max_retries} failed: {e}")
             time.sleep(5)
     
     if consumer is None:
-        print("[Consumer] Failed to connect after retries")
+        logger.error("Failed to connect to Kafka after all retries")
         return
+    
+    logger.info("Waiting for messages...")
     
     while True:
         try:
@@ -152,10 +147,10 @@ def kafka_consumer_loop():
             if msg is None:
                 continue
             if msg.error():
-                print(f"[Consumer] Error: {msg.error()}")
+                logger.error(f"Kafka error: {msg.error()}")
                 continue
             
             process_job(msg)
         except Exception as e:
-            print(f"[Consumer] Loop error: {e}")
+            logger.error(f"Consumer loop error: {e}", exc_info=True)
             time.sleep(1)

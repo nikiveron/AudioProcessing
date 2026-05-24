@@ -1,4 +1,5 @@
 <script setup lang="ts">
+    // App.vue
     import { onMounted, ref } from 'vue'
     import { useProjectStore } from './stores/projectStore'
     import { connection, ensureSignalRStarted } from './signalr'

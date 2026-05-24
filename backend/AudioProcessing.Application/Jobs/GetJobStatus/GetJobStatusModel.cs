@@ -1,4 +1,4 @@
-﻿
+﻿// GetJobStatusModel.cs
 namespace AudioProcessing.Application.Jobs.GetJobStatus;
 
 public record GetJobStatusModel(

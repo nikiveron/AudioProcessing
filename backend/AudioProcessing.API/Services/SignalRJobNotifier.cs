@@ -1,4 +1,5 @@
-﻿using AudioProcessing.API.Services.Interfaces;
+﻿// SignalRJobNotifier.cs
+using AudioProcessing.API.Services.Interfaces;
 using AudioProcessing.Domain.DTOs.Job;
 using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Domain.Enums;

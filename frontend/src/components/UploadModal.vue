@@ -1,4 +1,5 @@
 ﻿<script setup lang="ts">
+    // UploadModal.vue
     import { ref, onMounted } from 'vue'
     import { useProjectStore } from '../stores/projectStore'
     import { useInstrumentStore } from '../stores/instrumentStore'

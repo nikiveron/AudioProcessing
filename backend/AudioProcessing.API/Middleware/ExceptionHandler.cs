@@ -1,4 +1,5 @@
-﻿using AudioProcessing.Domain.Exceptions;
+﻿// ExceptionHandler.cs
+using AudioProcessing.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 
@@ -23,7 +24,7 @@ public class ExceptionHandler(ILogger<ExceptionHandler> logger) : IExceptionHand
     {
         var statusCode = (int)exception.HttpStatusCode;
         var errorMessage = $"Код ошибки {statusCode}. Ошибка: {exception.ErrorMessage}";
-        logger.LogError(errorMessage);
+        logger.LogError("{message}", errorMessage);
         httpContext.Response.StatusCode = statusCode;
         return [new(statusCode.ToString(), exception.ErrorMessage)];
     }

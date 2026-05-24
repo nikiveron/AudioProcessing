@@ -1,4 +1,5 @@
-﻿using AudioProcessing.API.Services.Interfaces;
+﻿// JobStatusConsumer.cs
+using AudioProcessing.API.Services.Interfaces;
 using AudioProcessing.Domain;
 using AudioProcessing.Domain.DTOs.Job;
 using AudioProcessing.Domain.Exceptions;

@@ -1,4 +1,5 @@
-﻿using AudioProcessing.Domain.Exceptions;
+﻿// GetJobStatusHandler.cs
+using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;

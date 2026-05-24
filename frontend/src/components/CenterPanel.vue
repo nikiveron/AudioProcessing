@@ -1,4 +1,5 @@
 ﻿<script setup lang="ts">
+    // CenterPanel.vue
     import { ref } from 'vue'
     import { useProjectStore } from '../stores/projectStore'
     import TrackCard from './TrackCard.vue'

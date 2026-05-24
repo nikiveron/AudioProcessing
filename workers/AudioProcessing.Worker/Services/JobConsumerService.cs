@@ -1,4 +1,5 @@
-﻿using AudioProcessing.Domain;
+﻿// JobConsumerService.cs
+using AudioProcessing.Domain;
 using AudioProcessing.Domain.DTOs.Job;
 using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Worker.Services.Interfaces;

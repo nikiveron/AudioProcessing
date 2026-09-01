@@ -17,7 +17,7 @@ services:
         condition: service_completed_successfully
     environment:
       ASPNETCORE_URLS: http://+:8080
-      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=audio_db;Username=audio;Password=audio123
       Kafka__BootstrapServers: kafka-1:9092,kafka-2:9093,kafka-3:9094
       Minio__Endpoint: minio:9000

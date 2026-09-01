@@ -5,11 +5,12 @@ using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.DTOs.Job;
 using AudioProcessing.Infrastructure.Database.Repositories;
 using AudioProcessing.Domain.Enums;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 
 namespace AudioProcessing.API.Services;
 
 public class JobStatusService(
-    JobsRepository repo,
+    IJobsRepository repo,
     IJobNotifier notifier,
     ILogger<JobStatusService> logger) : IJobStatusService
 {

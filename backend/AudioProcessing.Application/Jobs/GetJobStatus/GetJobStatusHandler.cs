@@ -1,6 +1,6 @@
 ﻿// GetJobStatusHandler.cs
 using AudioProcessing.Domain.Exceptions;
-using AudioProcessing.Infrastructure.Database.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -10,8 +10,8 @@ namespace AudioProcessing.Application.Jobs.GetJobStatus;
 public record GetJobStatusQuery(Guid JobId) : IRequest<GetJobStatusModel>;
 
 public class GetJobStatusHandler(
-    ILogger<GetJobStatusHandler> logger, 
-    JobsRepository jobsRepository
+    ILogger<GetJobStatusHandler> logger,
+    IJobsRepository jobsRepository
 ) : IRequestHandler<GetJobStatusQuery, GetJobStatusModel>
 {
     public async Task<GetJobStatusModel> Handle(GetJobStatusQuery request, CancellationToken cancellationToken)
@@ -23,7 +23,7 @@ public class GetJobStatusHandler(
             if (job == null)
             {
                 logger.LogInformation("JobsController ошибка 404 для job с id {id}", request.JobId);
-                throw new HttpErrorException($"Ошибка! Job не найден", HttpStatusCode.NotFound);
+                throw new HttpErrorException(ExceptionDictionary.JobNotFound, HttpStatusCode.NotFound);
             }
 
             logger.LogInformation("JobsController найден статус для job с id {id}", request.JobId);
@@ -37,10 +37,14 @@ public class GetJobStatusHandler(
                 job.OutputKey
             );
         }
-        catch (Exception ex)
+        catch (HttpErrorException)
+        {
+            throw;
+        }
+        catch (Exception)
         {
             logger.LogInformation("JobsController ошибка 500 для job с id {id}", request.JobId);
-            throw new HttpErrorException($"Ошибка! {ex.Message}", HttpStatusCode.InternalServerError);
+            throw new HttpErrorException(ExceptionDictionary.JobGetInfoFailed, HttpStatusCode.InternalServerError);
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿// JobPreparationService.cs
-using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Domain.DTOs.Job;
-using AudioProcessing.Infrastructure.Database.Repositories;
-using AudioProcessing.Worker.Services.Interfaces;
 using AudioProcessing.Domain.Enums;
+using AudioProcessing.Domain.Exceptions;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
+using AudioProcessing.Worker.Services.Interfaces;
 
 namespace AudioProcessing.Worker.Services;
 
 public class JobPreparationService(
-    JobsRepository jobsRepository,
+    IJobsRepository jobsRepository,
     IKafkaPublisher publisher,
     ILogger<JobPreparationService> logger) : IJobPreparationService
 {

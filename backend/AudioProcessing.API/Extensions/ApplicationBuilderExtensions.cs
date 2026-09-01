@@ -25,7 +25,7 @@ public static class ApplicationBuilderExtensions
 
         try
         {
-            var minio = scope.ServiceProvider.GetRequiredService<MinioService>();
+            var minio = scope.ServiceProvider.GetRequiredService<IMinioService>();
             await minio.EnsureBucketExistsAsync(CancellationToken.None);
             logger.LogInformation("MinIO инициализирован");
         }

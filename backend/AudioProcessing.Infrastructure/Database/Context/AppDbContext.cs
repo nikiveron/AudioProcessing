@@ -4,6 +4,7 @@ using AudioProcessing.Domain.Entities.Track;
 
 
 namespace AudioProcessing.Infrastructure.Database.Context;
+
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<TrackEntity> Tracks { get; set; }

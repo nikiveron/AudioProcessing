@@ -1,6 +1,5 @@
 ﻿// ProcessController.cs
 using AudioProcessing.Application.Process.StartProcess;
-using AudioProcessing.Domain;
 using AudioProcessing.Domain.Requests.Process;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -14,16 +13,14 @@ namespace AudioProcessing.API.Controllers;
 [Route("api/process")]
 public class ProcessController(IMediator mediator) : Controller
 {
-    private readonly string _outputTopic = KafkaTopics.JobCreated;
-
     /// <summary>
     /// Принимает параметры (fileKey, instrument), создаёт запись Job в БД и публикует сообщение в Kafka
     /// </summary>
-    /// <param name="req"></param>
-    /// <returns></returns>
+    /// <param name="req">Данные о том какой трек обработать и какой инструмент использовать</param>
+    /// <returns>Guid задачи, которая содержит в себе информацию о треке, который необходимо будет обработать</returns>
     [HttpPost]
     public async Task<IActionResult> StartProcess([FromBody] ProcessRequestDto req, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new StartProcessCommand(req.TrackId, req.Instrument, _outputTopic), cancellationToken));
+        return Ok(await mediator.Send(new StartProcessCommand(req.TrackId, req.Instrument), cancellationToken));
     }
 }

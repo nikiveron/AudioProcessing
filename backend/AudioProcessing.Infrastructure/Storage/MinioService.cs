@@ -6,7 +6,7 @@ using Minio.DataModel.Args;
 
 namespace AudioProcessing.Infrastructure.Storage;
 
-public class MinioService
+public class MinioService : IMinioService
 {
     private readonly IMinioClient _client;
     private readonly string _bucket;
@@ -16,7 +16,7 @@ public class MinioService
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         var s = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
-        _bucket = !string.IsNullOrWhiteSpace(s.Bucket) ? s.Bucket : 
+        _bucket = !string.IsNullOrWhiteSpace(s.Bucket) ? s.Bucket :
             throw new ArgumentNullException(_bucket, "Ошибка! Имя bucket не настроено в конфигурации");
         _logger = logger;
     }

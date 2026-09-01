@@ -3,6 +3,7 @@ using AudioProcessing.API.Services.Interfaces;
 using AudioProcessing.Domain.Settings;
 using AudioProcessing.Infrastructure.Database.Context;
 using AudioProcessing.Infrastructure.Database.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using AudioProcessing.Infrastructure.Storage;
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
@@ -36,8 +37,8 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddScoped<JobsRepository>();
-        services.AddScoped<TracksRepository>();
+        services.AddScoped<IJobsRepository, JobsRepository>();
+        services.AddScoped<ITracksRepository, TracksRepository>();
         services.AddScoped<IJobStatusService, JobStatusService>();
         services.AddScoped<IJobNotifier, SignalRJobNotifier>();
 
@@ -84,7 +85,7 @@ public static class ServiceCollectionExtensions
                 .Build();
         });
 
-        services.AddSingleton<MinioService>();
+        services.AddSingleton<IMinioService, MinioService>();
 
         return services;
     }

@@ -1,6 +1,7 @@
-﻿using AudioProcessing.Domain.Exceptions;
-using AudioProcessing.Domain.Entities.Track;
+﻿using AudioProcessing.Domain.Entities.Track;
+using AudioProcessing.Domain.Exceptions;
 using AudioProcessing.Infrastructure.Database.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using AudioProcessing.Infrastructure.Storage;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -16,8 +17,8 @@ public record CreateTrackCommand(
 
 public class CreateTrackHandler(
     ILogger<CreateTrackHandler> logger,
-    TracksRepository tracksRepository,
-    MinioService minio
+    ITracksRepository tracksRepository,
+    IMinioService minio
 ) : IRequestHandler<CreateTrackCommand, CreateTrackModel>
 {
     public async Task<CreateTrackModel> Handle(CreateTrackCommand request, CancellationToken cancellationToken)
@@ -26,18 +27,16 @@ public class CreateTrackHandler(
         // проверяем полученные данные
         if (string.IsNullOrWhiteSpace(request.Filename) || string.IsNullOrWhiteSpace(request.InputKey) || string.IsNullOrWhiteSpace(request.OutputKey))
         {
-            string exception = "Filename, OutputKey и InputKey обязательные параметры";
-            logger.LogInformation("TracksController ошибка 400 для Filename {filename}: {exception}", request.Filename, exception);
-            throw new HttpErrorException($"Ошибка! {exception}", HttpStatusCode.BadRequest);
+            logger.LogInformation("TracksController ошибка 400 для Filename {filename}: {exception}", request.Filename, ExceptionDictionary.MissingRequiredFields);
+            throw new HttpErrorException(ExceptionDictionary.MissingRequiredFields, HttpStatusCode.BadRequest);
         }
 
         // проверяем существует ли файл в minio
         bool exists = await minio.ObjectExistsAsync(request.InputKey, cancellationToken);
         if (!exists)
         {
-            string exception = "Файл не был найден в хранилище Minio";
-            logger.LogInformation("TracksController ошибка 404 для Filename {filename}: {exception}", request.Filename, exception);
-            throw new HttpErrorException($"Ошибка! {exception}", HttpStatusCode.NotFound);
+            logger.LogInformation("TracksController ошибка 404 для Filename {filename}: {exception}", request.Filename, ExceptionDictionary.FileNotFoundInMinio);
+            throw new HttpErrorException(ExceptionDictionary.FileNotFoundInMinio, HttpStatusCode.NotFound);
         }
 
         var track = new TrackEntity
@@ -49,10 +48,21 @@ public class CreateTrackHandler(
             CreatedAt = DateTime.UtcNow
         };
 
-        await tracksRepository.Create(track, cancellationToken);
+        try
+        {
+            await tracksRepository.Create(track, cancellationToken);
+        }
+        catch (ArgumentNullException)
+        {
+            throw new HttpErrorException(ExceptionDictionary.NullTrackCreationFailed, HttpStatusCode.BadRequest);
+        }
+        catch
+        {
+            throw new HttpErrorException(ExceptionDictionary.TrackCreationFailed, HttpStatusCode.InternalServerError);
+        }
 
         logger.LogInformation("TracksController трек Filename {filename} успешно записан в БД", request.Filename);
-        return 
+        return
             new CreateTrackModel(
                 track.TrackId,
                 track.Filename,

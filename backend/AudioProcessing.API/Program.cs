@@ -7,6 +7,11 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 1000 * 1024 * 1024;
+});
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
@@ -19,7 +24,20 @@ services.AddMediatR(cfg =>
 
 services.AddHealthChecks();
 services.AddControllers();
-services.AddOpenApi();
+services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new()
+        {
+            Title = "AudioProcessing API",
+            Version = "v1",
+            Description = "API для обработки аудио"
+        };
+        return Task.CompletedTask;
+    });
+});
+
 
 services.AddExceptionHandler<ExceptionHandler>();
 services.AddProblemDetails();
@@ -33,8 +51,16 @@ await app.InitializeInfrastructureAsync();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1"));
-    app.UseReDoc(o => o.SpecUrl("/openapi/v1.json"));
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1");
+        options.RoutePrefix = "swagger";
+    });
+    app.UseReDoc(options =>
+    {
+        options.SpecUrl("/openapi/v1.json");
+        options.RoutePrefix = "api-docs";
+    });
     app.MapScalarApiReference();
 }
 

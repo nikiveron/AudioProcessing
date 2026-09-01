@@ -1,5 +1,5 @@
 ﻿using AudioProcessing.Domain.Exceptions;
-using AudioProcessing.Infrastructure.Database.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -10,7 +10,7 @@ public record GetTrackByIdQuery(Guid TrackId) : IRequest<GetTrackByIdModel>;
 
 public class GetTrackByIdHandler(
     ILogger<GetTrackByIdHandler> logger,
-    TracksRepository tracksRepository
+    ITracksRepository tracksRepository
 ) : IRequestHandler<GetTrackByIdQuery, GetTrackByIdModel>
 {
     public async Task<GetTrackByIdModel> Handle(GetTrackByIdQuery request, CancellationToken cancellationToken)
@@ -20,7 +20,7 @@ public class GetTrackByIdHandler(
         if (track == null)
         {
             logger.LogInformation("TracksController ошибка 404 для id {id}", request.TrackId);
-            throw new HttpErrorException($"Ошибка! Трек с указанным id {request.TrackId} не найден", HttpStatusCode.NotFound);
+            throw new HttpErrorException(ExceptionDictionary.TrackNotFoundInDatabase, HttpStatusCode.NotFound);
         }
 
         logger.LogInformation("TracksController трек с id {id} успешно найден", request.TrackId);

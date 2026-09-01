@@ -1,6 +1,6 @@
 ﻿// UpdateJobHandler.cs
 using AudioProcessing.Domain.Exceptions;
-using AudioProcessing.Infrastructure.Database.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -10,15 +10,15 @@ namespace AudioProcessing.Application.Jobs.UpdateJob;
 
 public record UpdateJobCommand(
     Guid JobId,
-    JobStatus Status, 
-    string OutputKey, 
-    DateTime? StartedAt, 
+    JobStatus Status,
+    string OutputKey,
+    DateTime? StartedAt,
     DateTime? FinishedAt
 ) : IRequest<UpdateJobModel>;
 
-internal class UpdateJobHandler(
-    ILogger<UpdateJobHandler> logger, 
-    JobsRepository jobsRepository
+public class UpdateJobHandler(
+    ILogger<UpdateJobHandler> logger,
+    IJobsRepository jobsRepository
 ) : IRequestHandler<UpdateJobCommand, UpdateJobModel>
 {
     public async Task<UpdateJobModel> Handle(UpdateJobCommand request, CancellationToken cancellationToken)
@@ -30,7 +30,7 @@ internal class UpdateJobHandler(
             if (job == null)
             {
                 logger.LogInformation("JobsController ошибка 404 для job с id {id}", request.JobId);
-                throw new HttpErrorException("Ошибка! Job не был найден", HttpStatusCode.NotFound);
+                throw new HttpErrorException(ExceptionDictionary.JobNotFound, HttpStatusCode.NotFound);
             }
 
             job.Status = request.Status != JobStatus.Null ? request.Status : job.Status;
@@ -51,10 +51,14 @@ internal class UpdateJobHandler(
                 job.OutputKey
            );
         }
-        catch (Exception ex)
+        catch (HttpErrorException)
+        {
+            throw;
+        }
+        catch (Exception)
         {
             logger.LogInformation("JobsController ошибка 500 для id {id}", request.JobId);
-            throw new HttpErrorException($"Ошибка! {ex.Message}", HttpStatusCode.InternalServerError);
+            throw new HttpErrorException(ExceptionDictionary.JobUpdateFailed, HttpStatusCode.InternalServerError);
         }
     }
 }

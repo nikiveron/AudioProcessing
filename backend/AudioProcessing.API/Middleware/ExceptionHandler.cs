@@ -32,7 +32,7 @@ public class ExceptionHandler(ILogger<ExceptionHandler> logger) : IExceptionHand
     private List<ExceptionResponse> PrepareFormattedError(Exception exception, HttpContext httpContext, HttpStatusCode httpStatusCode)
     {
         logger.LogError("Произошла непредвиденная ошибка при обработке запроса. {stackTrace}", exception.StackTrace);
-        var message = exception.InnerException !=null && !string.IsNullOrEmpty(exception.InnerException.Message) ? exception.InnerException.Message : exception.Message;
+        var message = exception.InnerException != null && !string.IsNullOrEmpty(exception.InnerException.Message) ? exception.InnerException.Message : exception.Message;
         httpContext.Response.StatusCode = (int)httpStatusCode;
         return [new(((int)httpStatusCode).ToString(), message)];
     }

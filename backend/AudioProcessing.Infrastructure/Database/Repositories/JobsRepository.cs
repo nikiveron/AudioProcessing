@@ -1,9 +1,10 @@
 using AudioProcessing.Domain.Entities.Job;
 using AudioProcessing.Infrastructure.Database.Context;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 
 namespace AudioProcessing.Infrastructure.Database.Repositories;
 
-public class JobsRepository(AppDbContext db)
+public class JobsRepository(AppDbContext db) : IJobsRepository
 {
     public async Task<Guid> Create(JobEntity jobEntity, CancellationToken ct)
     {
@@ -16,7 +17,6 @@ public class JobsRepository(AppDbContext db)
         await db.SaveChangesAsync(ct);
         return jobEntity.JobId;
     }
-
 
     public async Task<JobEntity?> Read(Guid id, CancellationToken ct)
     {

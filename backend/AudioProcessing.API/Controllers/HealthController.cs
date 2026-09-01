@@ -9,7 +9,7 @@ namespace AudioProcessing.API.Controllers;
 /// <param name="minio">Сервис MinIO для проверки состояния</param>
 [ApiController]
 [Route("api/health")]
-public class HealthController(MinioService minio) : ControllerBase
+public class HealthController(IMinioService minio) : ControllerBase
 {
     /// <summary>
     /// Метод проверяет доступность MinIO и существование бакета. Если бакет не существует, пытается его создать.

@@ -24,7 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\backend\AudioProcessing.API\AudioProcessing.API.csproj" />
     <ProjectReference Include="..\backend\AudioProcessing.Application\AudioProcessing.Application.csproj" />
+    <ProjectReference Include="..\backend\AudioProcessing.Domain\AudioProcessing.Domain.csproj" />
     <ProjectReference Include="..\backend\AudioProcessing.Infrastructure\AudioProcessing.Infrastructure.csproj" />
     <ProjectReference Include="..\workers\AudioProcessing.Worker\AudioProcessing.Worker.csproj" />
   </ItemGroup>

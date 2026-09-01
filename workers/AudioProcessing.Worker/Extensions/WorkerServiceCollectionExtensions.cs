@@ -1,6 +1,7 @@
 ﻿using AudioProcessing.Domain.Settings;
 using AudioProcessing.Infrastructure.Database.Context;
 using AudioProcessing.Infrastructure.Database.Repositories;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using AudioProcessing.Infrastructure.Storage;
 using AudioProcessing.Worker.Services;
 using AudioProcessing.Worker.Services.Interfaces;
@@ -23,7 +24,7 @@ public static class WorkerServiceCollectionExtensions
 
     public static IServiceCollection AddWorkerApplication(this IServiceCollection services)
     {
-        services.AddScoped<JobsRepository>();
+        services.AddScoped<IJobsRepository, JobsRepository>();
         services.AddScoped<IJobPreparationService, JobPreparationService>();
 
         services.AddSingleton<IKafkaPublisher, KafkaPublisher>();
@@ -69,7 +70,7 @@ public static class WorkerServiceCollectionExtensions
                 .Build();
         });
 
-        services.AddSingleton<MinioService>();
+        services.AddSingleton<IMinioService, MinioService>();
 
         return services;
     }

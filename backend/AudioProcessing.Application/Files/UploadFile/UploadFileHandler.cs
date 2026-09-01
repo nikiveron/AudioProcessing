@@ -11,13 +11,13 @@ public record UploadFileCommand(IFormFile File) : IRequest<UploadFileModel>;
 
 public class UploadFileHandler(
     ILogger<UploadFileHandler> logger,
-    MinioService minio
+    IMinioService minio
 ) : IRequestHandler<UploadFileCommand, UploadFileModel>
 {
     public async Task<UploadFileModel> Handle(UploadFileCommand request, CancellationToken cancellationToken)
     {
         if (request.File == null || request.File.Length == 0)
-            throw new HttpErrorException("Ошибка! Файл не был загружен", HttpStatusCode.BadRequest);
+            throw new HttpErrorException(ExceptionDictionary.FileIsEmpty, HttpStatusCode.BadRequest);
 
         var trackGuid = Guid.NewGuid();
         string inputKey = $"input/{trackGuid}_{request.File.FileName}";
@@ -30,12 +30,12 @@ public class UploadFileHandler(
 
             logger.LogInformation("Файл {Filename} загружен в MinIO его key:{Key}", request.File.FileName, inputKey);
 
-            return new (inputKey, outputKey);
+            return new(inputKey, outputKey);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Ошибка загрузки файла {Filename} в хранилище", request.File.FileName);
-            throw new HttpErrorException("Ошибка при загрузке файла в хранилище", HttpStatusCode.InternalServerError);
+            throw new HttpErrorException(ExceptionDictionary.FileUploadToMinioFailed, HttpStatusCode.InternalServerError);
         }
     }
 }

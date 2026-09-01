@@ -1,10 +1,11 @@
 ﻿using AudioProcessing.Domain.Entities.Track;
 using AudioProcessing.Infrastructure.Database.Context;
+using AudioProcessing.Infrastructure.Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AudioProcessing.Infrastructure.Database.Repositories;
 
-public class TracksRepository(AppDbContext db)
+public class TracksRepository(AppDbContext db) : ITracksRepository
 {
     public async Task<Guid> Create(TrackEntity trackEntity, CancellationToken ct)
     {

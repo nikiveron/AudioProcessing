@@ -11,13 +11,13 @@ public record DownloadFileQuery(string ObjectKey) : IRequest<DownloadFileModel>;
 
 public class DownloadFileHandler(
     ILogger<DownloadFileHandler> logger,
-    MinioService minio
+    IMinioService minio
 ) : IRequestHandler<DownloadFileQuery, DownloadFileModel>
 {
     public async Task<DownloadFileModel> Handle(DownloadFileQuery request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.ObjectKey))
-            throw new HttpErrorException("Ошибка! ObjectKey обязательный параметр", HttpStatusCode.BadRequest);
+            throw new HttpErrorException(ExceptionDictionary.ObjectKeyRequired, HttpStatusCode.BadRequest);
 
         try
         {
@@ -39,7 +39,7 @@ public class DownloadFileHandler(
         catch (Exception ex)
         {
             logger.LogError(ex, "Ошибка скачивания файла {objectKey}", request.ObjectKey);
-            throw new HttpErrorException("Ошибка! Файл не был найден.", HttpStatusCode.NotFound);
+            throw new HttpErrorException(ExceptionDictionary.FileNotFound, HttpStatusCode.NotFound);
         }
     }
 }

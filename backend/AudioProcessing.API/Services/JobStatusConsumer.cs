@@ -55,7 +55,7 @@ public class JobStatusConsumer : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<IJobStatusService>();
 
-                var evt = JsonSerializer.Deserialize<JobStatusEvent>(result.Message.Value) 
+                var evt = JsonSerializer.Deserialize<JobStatusEvent>(result.Message.Value)
                     ?? throw new InvalidOperationException("Не валидное сообщение из Kafka");
 
                 currentJob = evt;
@@ -113,7 +113,7 @@ public class JobStatusConsumer : BackgroundService
     {
         try
         {
-            _consumer.Close();   
+            _consumer.Close();
         }
         catch (ObjectDisposedException)
         {
